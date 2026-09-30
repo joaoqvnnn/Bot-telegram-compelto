@@ -6,7 +6,7 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery, BufferedInputFile
 
 from database import (
-    get_saldo, get_produto, listar_produtos, get_pagamento,
+    get_saldo, get_produto, listar_produtos, get_pagamento, marcar_pago,
 )
 from keyboards import (
     kb_menu, kb_catalogo, kb_produto, kb_saldo_insuficiente, kb_qr_pix,
@@ -16,6 +16,7 @@ from texts import (
     texto_gerando_pagamento, texto_qr_pix, texto_aguardando_nao_pago, texto_pago,
 )
 from utils.pix import gerar_pix_qr
+from handlers.entrega import processar_entrega, mostrar_entrega
 
 router = Router()
 
@@ -87,12 +88,15 @@ async def comprar(call: CallbackQuery, bot: Bot):
     if not produto:
         await call.answer("Produto não encontrado.", show_alert=True)
         return
+    if produto["estoque"] <= 0:
+        await call.answer("❌ Sem estoque disponível.", show_alert=True)
+        return
 
     saldo = get_saldo(call.from_user.id)
 
-    # -------- Caso 1: saldo suficiente --------
+    # -------- Caso 1: saldo suficiente → NOVA MSG e depois entrega --------
     if saldo >= produto["preco"]:
-        await call.message.answer(
+        msg = await call.message.answer(
             f"✅ <b>Compra aprovada!</b>\n\n"
             f"🚀 <b>{produto['nome']}</b>\n"
             f"💵 Valor: <b>R$ {produto['preco']:.2f}</b>\n"
@@ -101,9 +105,14 @@ async def comprar(call: CallbackQuery, bot: Bot):
             parse_mode="HTML",
         )
         await call.answer()
-        # 🔜 Próximo módulo — Seção 6:
-        # from handlers.entrega import iniciar_entrega
-        # await iniciar_entrega(bot, call.from_user.id, produto, call.message)
+
+        compra = processar_entrega(call.from_user.id, produto, 1)
+        if not compra:
+            await msg.edit_text("❌ Sem credenciais em estoque.")
+            return
+
+        await asyncio.sleep(1)
+        await mostrar_entrega(msg, compra)   # EDITA a msg de confirmação → entrega
         return
 
     # -------- Caso 2: saldo insuficiente → NOVA MSG --------
@@ -170,10 +179,20 @@ async def pix_wait(call: CallbackQuery):
 
     # -------- EDITA novamente p/ entrega (Seção 6) --------
     await asyncio.sleep(1)
+
+    produto = get_produto(pag["produto_id"]) if pag["produto_id"] else None
+    if produto:
+        # credita o valor pago e debita em seguida (simulação até integrar webhook)
+        marcar_pago(txid)
+        compra = processar_entrega(call.from_user.id, produto, 1)
+        if compra:
+            await mostrar_entrega(call.message, compra)
+            await call.answer()
+            return
+
     await _safe_edit_caption(
         call.message,
-        "✅ <b>Produto realizado com sucesso!</b>\n\n"
-        "<i>(Fluxo de entrega será implementado no próximo módulo.)</i>",
+        "✅ <b>Produto realizado com sucesso!</b>\n\n<i>(Entrega pendente.)</i>",
         markup=None,
     )
     await call.answer()
@@ -187,11 +206,3 @@ async def pix_cancel(call: CallbackQuery):
     saldo = get_saldo(call.from_user.id)
     await _safe_edit(call.message, boas_vindas(call.from_user.id, saldo), kb_menu())
     await call.answer()
-
-
-# ============================================================
-# 🛒 Comprar mais de um — STUB (Módulo 5B virá depois)
-# ============================================================
-@router.callback_query(F.data.startswith("prod_buy_multi:"))
-async def buy_multi_stub(call: CallbackQuery):
-    await call.answer("🚧 Módulo 5B — em breve", show_alert=False)
