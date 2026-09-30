@@ -1,5 +1,6 @@
 # database.py
 import sqlite3
+import hashlib
 from contextlib import closing
 
 DB_PATH = "bot.db"
@@ -137,6 +138,45 @@ def init_db():
         }
         for k, v in defaults.items():
             conn.execute("INSERT OR IGNORE INTO config_admin (chave, valor) VALUES (?, ?)", (k, v))
+
+        # ============== MÓDULO 5 ==============
+
+        # ---- senha de saque (14) ----
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS senhas_saque (
+                user_id     INTEGER PRIMARY KEY,
+                senha_hash  TEXT NOT NULL,
+                criado_em   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # ---- chave PIX confirmada (14.4) ----
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS chaves_pix (
+                user_id        INTEGER PRIMARY KEY,
+                tipo           TEXT NOT NULL,
+                chave          TEXT NOT NULL,
+                titular_nome   TEXT,
+                titular_banco  TEXT,
+                criado_em      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # ---- saques (13 / 14) ----
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS saques (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id         INTEGER NOT NULL,
+                valor           REAL NOT NULL,
+                chave_tipo      TEXT,
+                chave_mascarada TEXT,
+                titular_nome    TEXT,
+                titular_banco   TEXT,
+                status          TEXT DEFAULT 'concluido',
+                txid            TEXT,
+                criado_em       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
 
         # ---- seed produtos ----
         cur = conn.execute("SELECT COUNT(*) FROM produtos")
@@ -424,3 +464,68 @@ def ativar_afiliado(user_id: int):
             ON CONFLICT(user_id) DO UPDATE SET ativo = 1
         """, (user_id,))
         conn.commit()
+
+
+# ============== MÓDULO 5 — SENHA / CHAVE / SAQUES ==============
+def _hash_senha(senha: str) -> str:
+    return hashlib.sha256(senha.encode("utf-8")).hexdigest()
+
+
+def get_senha_hash(user_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        cur = conn.execute("SELECT senha_hash FROM senhas_saque WHERE user_id = ?", (user_id,))
+        row = cur.fetchone()
+        return row[0] if row else None
+
+
+def set_senha(user_id: int, senha: str):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute("""
+            INSERT INTO senhas_saque (user_id, senha_hash) VALUES (?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET senha_hash = excluded.senha_hash
+        """, (user_id, _hash_senha(senha)))
+        conn.commit()
+
+
+def checar_senha(user_id: int, senha: str) -> bool:
+    return get_senha_hash(user_id) == _hash_senha(senha)
+
+
+def get_chave_pix(user_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("SELECT * FROM chaves_pix WHERE user_id = ?", (user_id,))
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+
+def set_chave_pix(user_id, tipo, chave, nome, banco):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute("""
+            INSERT INTO chaves_pix (user_id, tipo, chave, titular_nome, titular_banco)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                tipo=excluded.tipo, chave=excluded.chave,
+                titular_nome=excluded.titular_nome, titular_banco=excluded.titular_banco
+        """, (user_id, tipo, chave, nome, banco))
+        conn.commit()
+
+
+def criar_saque(user_id, valor, chave_tipo, chave_mascarada, titular_nome, titular_banco, txid):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        cur = conn.execute("""
+            INSERT INTO saques (user_id, valor, chave_tipo, chave_mascarada, titular_nome, titular_banco, txid)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (user_id, valor, chave_tipo, chave_mascarada, titular_nome, titular_banco, txid))
+        conn.commit()
+        return cur.lastrowid
+
+
+def listar_saques(user_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute(
+            "SELECT * FROM saques WHERE user_id = ? ORDER BY id DESC",
+            (user_id,),
+        )
+        return [dict(r) for r in cur.fetchall()]
