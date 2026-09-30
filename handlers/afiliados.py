@@ -69,19 +69,3 @@ async def af_voltar(call: CallbackQuery):
     except TelegramBadRequest:
         pass
     await call.answer()
-
-
-# ---------- Stubs (Módulo 5: Histórico PDF / Saques / Senha Mini App) ----------
-@router.callback_query(F.data == "af_hist")
-async def af_hist(call: CallbackQuery):
-    await call.answer("🚧 Histórico de Saque (PDF) — próximo módulo", show_alert=False)
-
-
-@router.callback_query(F.data == "af_saques")
-async def af_saques(call: CallbackQuery):
-    await call.answer("🚧 Saques — próximo módulo", show_alert=False)
-
-
-@router.callback_query(F.data == "af_senha")
-async def af_senha(call: CallbackQuery):
-    await call.answer("🚧 Mini App Senha — próximo módulo", show_alert=False)
