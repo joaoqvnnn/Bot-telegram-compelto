@@ -38,6 +38,11 @@ def init_db():
                 vendo_agora   INTEGER DEFAULT 0
             )
         """)
+        # Migração leve: campo imagem_url em produtos
+        try:
+            conn.execute("ALTER TABLE produtos ADD COLUMN imagem_url TEXT DEFAULT ''")
+        except sqlite3.OperationalError:
+            pass
 
         # ---- pagamentos ----
         conn.execute("""
@@ -135,6 +140,8 @@ def init_db():
             "recarga_bonus_min":       "10.00",
             "comissao_afiliado_pct":   "20.0",
             "saque_minimo_afiliado":   "20.00",
+            "atendimento_link":        "",
+            "atendimento_mensagem":    "Olá, vim através do bot e gostaria de ajuda.",
         }
         for k, v in defaults.items():
             conn.execute("INSERT OR IGNORE INTO config_admin (chave, valor) VALUES (?, ?)", (k, v))
@@ -528,4 +535,17 @@ def listar_saques(user_id: int):
             "SELECT * FROM saques WHERE user_id = ? ORDER BY id DESC",
             (user_id,),
         )
+        return [dict(r) for r in cur.fetchall()]
+
+
+# ============== MÓDULO 6 — BUSCA ==============
+def buscar_produtos(termo: str, limite: int = 20):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        like = f"%{termo}%"
+        cur = conn.execute("""
+            SELECT * FROM produtos
+            WHERE nome LIKE ? OR descricao LIKE ?
+            ORDER BY id LIMIT ?
+        """, (like, like, limite))
         return [dict(r) for r in cur.fetchall()]
