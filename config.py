@@ -12,3 +12,6 @@ CLIENTES_ATENDIDOS = "10.000"
 
 # Link do canal para o botão
 LINK_CANAL = f"https://t.me/{CANAL_OBRIGATORIO.lstrip('@')}"
+
+# Nome do titular que aparece no comprovante PIX
+NOME_TITULAR_CONTA = "MINHA LOJA DIGITAL"
