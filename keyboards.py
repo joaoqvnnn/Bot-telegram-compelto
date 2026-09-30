@@ -66,3 +66,78 @@ def kb_qr_pix(txid: str, copia_cola: str) -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="⏰ AGUARDANDO PAGAMENTO", callback_data=f"pix_wait:{txid}")],
         [InlineKeyboardButton(text="❌ Cancelar", callback_data=f"pix_cancel:{txid}")],
     ])
+
+
+# ---------- Módulo 3 — 5B ----------
+def kb_resultado_pedido(produto_id: int, qtd: int, total: float) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text="✅ Confirmar Compra",
+            callback_data=f"multi_conf:{produto_id}:{qtd}:{total:.2f}",
+        )],
+        [InlineKeyboardButton(text="❌ Cancelar", callback_data="multi_cancel")],
+    ])
+
+
+def kb_saldo_insuficiente_multi(total: float) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text=f"💠 Gerar PIX de R$ {total:.2f}",
+            callback_data=f"multi_pix:{total:.2f}",
+        )],
+        [InlineKeyboardButton(text="❌ Cancelar", callback_data="multi_cancel")],
+    ])
+
+
+# ---------- Módulo 3 — Entrega ----------
+def kb_entrega(compra_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔓 VER PRODUTO", callback_data=f"ent_revelar:{compra_id}")],
+        [InlineKeyboardButton(text="🔗 CLIQUE AQUI PARA ATIVAR", callback_data=f"ent_ativar:{compra_id}")],
+    ])
+
+
+# ---------- Módulo 3 — Perfil ----------
+def kb_perfil() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📜 Histórico de Compras", callback_data="perfil_hist:0:0")],
+        [InlineKeyboardButton(text="🎁 Resgatar Gift Card", callback_data="perfil_gift")],
+        [InlineKeyboardButton(text="✏️ Alterar dados", callback_data="perfil_alt")],
+        [InlineKeyboardButton(text="⬅️ VOLTAR", callback_data="perfil_voltar")],
+    ])
+
+
+# ---------- Módulo 3 — Histórico ----------
+def kb_historico(compras: list, pagina: int, apenas_ativas: bool) -> InlineKeyboardMarkup:
+    rows = []
+    if compras:
+        compra = compras[pagina]
+        rows.append([InlineKeyboardButton(
+            text="🔗 CLIQUE AQUI PARA ATIVAR",
+            callback_data=f"ent_ativar:{compra['id']}",
+        )])
+        nav = []
+        if pagina > 0:
+            nav.append(InlineKeyboardButton(
+                text="⏪ Anterior",
+                callback_data=f"perfil_hist:{pagina-1}:{1 if apenas_ativas else 0}",
+            ))
+        nav.append(InlineKeyboardButton(
+            text=f"📄 {pagina+1}/{len(compras)}",
+            callback_data="hist_noop",
+        ))
+        if pagina < len(compras) - 1:
+            nav.append(InlineKeyboardButton(
+                text="⏩ Avançar >>",
+                callback_data=f"perfil_hist:{pagina+1}:{1 if apenas_ativas else 0}",
+            ))
+        if nav:
+            rows.append(nav)
+
+    filtro_label = "🟢 Apenas Ativas" if not apenas_ativas else "🟢 Todas"
+    rows.append([InlineKeyboardButton(
+        text=filtro_label,
+        callback_data=f"hist_filtro:{0 if apenas_ativas else 1}",
+    )])
+    rows.append([InlineKeyboardButton(text="⬅️ VOLTAR", callback_data="perfil_voltar")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
