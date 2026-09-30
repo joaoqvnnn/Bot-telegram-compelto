@@ -89,3 +89,108 @@ def texto_aguardando_nao_pago() -> str:
 
 def texto_pago() -> str:
     return "✅ <b>PAGO</b>"
+
+
+# ---------- Módulo 3 — 5B Comprar mais de um ----------
+def texto_perguntar_qtd(estoque: int) -> str:
+    return (
+        f"<b>Quantos logins deseja comprar?</b>\n\n"
+        f"📦 Estoque disponível: <b>{estoque}</b>\n\n"
+        f"💡 Digite /cancelar a qualquer momento para sair."
+    )
+
+
+def texto_resultado_pedido(produto: dict, qtd: int, total: float, saldo: float) -> str:
+    return (
+        f"🛒 <b>RESULTADO DO PEDIDO</b>\n"
+        f"🚀 <b>{produto['nome']}</b>\n"
+        f"📦 Quantidade: <b>{qtd}</b>\n"
+        f"💵 Preço unitário: <b>R$ {produto['preco']:.2f}</b>\n"
+        f"💰 Total: <b>R$ {total:.2f}</b>\n"
+        f"💰 Seu Saldo: <b>R$ {saldo:.2f}</b>"
+    )
+
+
+def texto_saldo_insuficiente_multi(saldo: float, total: float, faltam: float) -> str:
+    return (
+        f"❌ <b>Saldo insuficiente!</b>\n\n"
+        f"💰 Seu saldo: <b>R$ {saldo:.2f}</b>\n"
+        f"💵 Valor total: <b>R$ {total:.2f}</b>\n"
+        f"📉 Faltam: <b>R$ {faltam:.2f}</b>\n\n"
+        f"💡 Deseja gerar um PIX para completar a compra?"
+    )
+
+
+def texto_compra_cancelada() -> str:
+    return (
+        "❌ <b>Compra cancelada!</b>\n\n"
+        "Operação de compra múltipla foi cancelada."
+    )
+
+
+def texto_qtd_invalida(estoque: int) -> str:
+    return (
+        f"⚠️ <b>Quantidade inválida.</b>\n\n"
+        f"Digite um número entre 1 e {estoque} ou /cancelar para sair."
+    )
+
+
+# ---------- Módulo 3 — Seção 6 Entrega ----------
+def _borrado(txt: str) -> str:
+    return "•" * len(txt) if txt else "•" * 16
+
+
+def texto_entrega(compra: dict, revelar: bool = False) -> str:
+    email = compra["email"] if revelar else _borrado(compra["email"])
+    senha = compra["senha"] if revelar else _borrado(compra["senha"])
+
+    return (
+        f"✅ <b>Produto realizado com sucesso!</b>\n\n"
+        f"⏰ Data da compra: <b>{compra['data_compra']}</b>\n"
+        f"📆 Vencimento: <b>{compra['data_vencimento']}</b>\n"
+        f"💰 Valor: <b>R$ {compra['valor_total']:.2f}</b>\n"
+        f"🎫 ID da compra: <code>{compra['id']}</code>\n"
+        f"⚜️ Serviço: <b>{compra['produto_nome']}</b> (no seu email)\n"
+        f"📧 Email: <code>{email}</code>\n"
+        f"🔐 Senha: <code>{senha}</code>\n"
+        f"📃 Nota: Use o botão abaixo para ativar:"
+    )
+
+
+# ---------- Módulo 3 — Seção 7 Perfil ----------
+def texto_perfil(user_id: int, saldo: float, whatsapp: str, stats: dict) -> str:
+    zap = whatsapp if whatsapp else "Não cadastrado"
+    return (
+        f"👤 <b>Meu perfil</b>\n\n"
+        f"🔍 Veja aqui os detalhes da sua conta:\n\n"
+        f"- 👤 <b>Informações:</b>\n"
+        f"🆔 ID da Carteira: <code>{user_id}</code>\n"
+        f"💰 Saldo Atual: <b>R$ {saldo:.2f}</b>\n"
+        f"📲 Seu Whatsapp: <b>{zap}</b>\n\n"
+        f"─── 📊 <b>Suas Movimentações:</b>\n"
+        f"ー 🛒 Compras Realizadas: <b>{stats['qtd']}</b>\n"
+        f"ー 💰 Total Gasto Em Compras: <b>R$ {stats['gasto']:.2f}</b>\n"
+        f"ー 💠 Pix Inseridos: <b>R$ 0.00</b>\n"
+        f"ー 🎁 Gifts Resgatados: <b>R$ 0.00</b>"
+    )
+
+
+# ---------- Módulo 3 — Seção 8 Histórico ----------
+def texto_historico_vazio() -> str:
+    return (
+        "📜 <b>Histórico de Compras</b>\n\n"
+        "Você não tem compras no bot. Quando comprar alguma conta, as informações dela ficarão exibidas aqui."
+    )
+
+
+def texto_historico_item(compra: dict, pagina: int, total: int) -> str:
+    return (
+        f"📜 <b>Histórico de Compras</b>  ·  📄 {pagina}/{total}\n\n"
+        f"🎫 ID: <code>{compra['id']}</code>\n"
+        f"🚀 <b>{compra['produto_nome']}</b>\n"
+        f"📦 Quantidade: <b>{compra['quantidade']}</b>\n"
+        f"💰 Valor: <b>R$ {compra['valor_total']:.2f}</b>\n"
+        f"⏰ Comprado em: <b>{compra['data_compra']}</b>\n"
+        f"📆 Vencimento: <b>{compra['data_vencimento']}</b>\n"
+        f"🟢 Status: <b>{'Ativo' if compra['status'] == 'ativo' else 'Expirado'}</b>"
+    )
