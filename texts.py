@@ -194,3 +194,136 @@ def texto_historico_item(compra: dict, pagina: int, total: int) -> str:
         f"📆 Vencimento: <b>{compra['data_vencimento']}</b>\n"
         f"🟢 Status: <b>{'Ativo' if compra['status'] == 'ativo' else 'Expirado'}</b>"
     )
+
+
+# ============== MÓDULO 4 ==============
+
+# ---------- 9. GIFT CARD ----------
+def texto_gift_pedir() -> str:
+    return (
+        "🎁 <b>RESGATAR GIFT CARD</b>\n\n"
+        "Digite o código do seu gift card abaixo:\n"
+        "Exemplo: <code>ABC123XYZ456</code>"
+    )
+
+
+def texto_gift_invalido() -> str:
+    return "❌ <b>Gift não encontrado.</b>"
+
+
+def texto_gift_ok(valor: float, produto_nome: str | None) -> str:
+    linha_prod = f"\n🎁 Produto vinculado: <b>{produto_nome}</b>" if produto_nome else ""
+    return (
+        f"✅ <b>Gift Card resgatado!</b>\n\n"
+        f"💰 Valor creditado: <b>R$ {valor:.2f}</b>{linha_prod}"
+    )
+
+
+# ---------- 10. ALTERAR DADOS ----------
+def texto_alterar_dados_atual(atual: str) -> str:
+    return (
+        "✏️ <b>ALTERAR DADOS</b>\n\n"
+        f"📲 Whatsapp atual: <b>{atual or 'Não cadastrado'}</b>\n\n"
+        "Envie o novo número com DDD (ex: <code>11987654321</code>).\n"
+        "Para remover, envie: <code>remover</code>\n\n"
+        "💡 Digite /cancelar para sair."
+    )
+
+
+def texto_alterar_dados_invalido() -> str:
+    return "❌ <b>Número inválido.</b> Envie DDD + número (10 ou 11 dígitos) ou <code>remover</code>."
+
+
+def texto_alterar_dados_ok(novo: str) -> str:
+    if novo:
+        return f"✅ <b>Whatsapp atualizado!</b>\n\n📲 Novo número: <b>{novo}</b>"
+    return "✅ <b>Whatsapp removido com sucesso.</b>"
+
+
+# ---------- 11. RECARGA ----------
+def texto_recarga_menu() -> str:
+    return (
+        "💠 Opte por PIX Rápido para que seu saldo seja creditado imediatamente.\n"
+        "💰 Selecione uma opção para recarregar:"
+    )
+
+
+def texto_recarga_pedir_valor() -> str:
+    from database import get_config
+    minimo = float(get_config("recarga_minima", "4.00"))
+    bonus_ativo = get_config("recarga_bonus_ativo", "1") == "1"
+    bonus_pct = get_config("recarga_bonus_pct", "10")
+    bonus_min = float(get_config("recarga_bonus_min", "10.00"))
+
+    base = (
+        "ℹ️ Informe o valor que deseja recarregar:\n"
+        f"🔻 Recarga mínima: <b>R$ {minimo:.2f}</b>\n\n"
+        "⚠️ Por favor, envie o valor que deseja recarregar agora.\n"
+        "Ao realizar um depósito você declara ter lido e estar de acordo com nossos /termos"
+    )
+    if bonus_ativo:
+        base += (
+            f"\n\n🎁 Bônus de recarga: <b>{bonus_pct}%</b>\n"
+            f"❗ Recarga mínima para ganhar o bônus: <b>R$ {bonus_min:.2f}</b>"
+        )
+    return base
+
+
+def texto_recarga_qr(valor: float, bonus: float, saldo_atual: float, txid: str) -> str:
+    saldo_futuro = saldo_atual + valor + bonus
+    linhas = [
+        "💠 <b>PIX de recarga gerado!</b>\n",
+        f"💵 Valor: <b>R$ {valor:.2f}</b>",
+    ]
+    if bonus > 0:
+        linhas.append(f"🎁 Bônus: <b>R$ {bonus:.2f}</b>")
+    linhas += [
+        f"💰 Saldo atual: <b>R$ {saldo_atual:.2f}</b>",
+        f"💸 Saldo após pagamento: <b>R$ {saldo_futuro:.2f}</b>",
+        f"🆔 ID da recarga: <code>{txid}</code>",
+        "⏰ Expira em: <b>30 minutos</b>",
+    ]
+    return "\n".join(linhas)
+
+
+def texto_recarga_ok(valor: float, bonus: float, saldo_novo: float) -> str:
+    linhas = [
+        "✅ <b>Recarga realizada com sucesso!</b>\n",
+        f"💵 Valor: <b>R$ {valor:.2f}</b>",
+    ]
+    if bonus > 0:
+        linhas.append(f"🎁 Bônus: <b>R$ {bonus:.2f}</b>")
+    linhas.append(f"💰 Novo saldo: <b>R$ {saldo_novo:.2f}</b>")
+    return "\n".join(linhas)
+
+
+# ---------- 12. AFILIADOS ----------
+def texto_afiliado_inativo(comissao: float, saque_min: float) -> str:
+    return (
+        "💰 <b>PROGRAMA DE AFILIADOS</b>\n\n"
+        "⚙️ Status: ❌ <b>Inativo</b>\n"
+        f"🧲 Comissão: <b>{comissao:.1f}%</b>\n"
+        f"💰 Saque mínimo: <b>R$ {saque_min:.2f}</b>\n\n"
+        "ℹ️ <b>INFO:</b> Seus indicados continuarão gerando comissão para sempre."
+    )
+
+
+def texto_afiliado_ativo(af: dict, link: str, saque_min: float) -> str:
+    indicacoes = af["indicacoes"]
+    media = (af["total_ganho"] / indicacoes) if indicacoes else 0.0
+    proxima = 5 - (indicacoes % 5) if indicacoes % 5 else 5
+    nivel = "Iniciante" if indicacoes < 5 else ("Bronze" if indicacoes < 20 else "Prata")
+
+    return (
+        "💰 <b>PROGRAMA DE AFILIADOS</b>\n\n"
+        "⚙️ Status: ✅ <b>Ativo</b>\n"
+        f"🧲 Sua comissão: <b>{af['comissao']:.1f}%</b> (de todas recargas do indicado)\n\n"
+        f"👥 Indicações: <b>{indicacoes}</b>\n"
+        f"🪙 Total ganho: <b>R$ {af['total_ganho']:.2f}</b>\n"
+        f"📊 Média: <b>R$ {media:.2f}</b>\n"
+        f"💰 Saque mínimo: <b>R$ {saque_min:.2f}</b>\n\n"
+        f"🌱| Nível: <b>{nivel}</b>\n"
+        f"🎯 Próxima meta: <b>5</b> ({proxima} restantes)\n\n"
+        "ℹ️ <b>INFO:</b> Seus indicados continuarão gerando comissão para sempre.\n\n"
+        f"🔗 <b>Seu link:</b>\n<code>{link}</code>"
+    )
