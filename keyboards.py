@@ -214,3 +214,54 @@ def kb_afiliado_ativo() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="🔐 Cadastrar Senha de Saque", callback_data="af_senha")],
         [InlineKeyboardButton(text="⬅️ Voltar", callback_data="af_voltar")],
     ])
+
+
+# ============== MÓDULO 5 ==============
+
+def kb_sem_senha() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔐 Cadastrar Senha de Saque", callback_data="senha_cad")],
+        [InlineKeyboardButton(text="⬅️ Voltar", callback_data="saq_voltar")],
+    ])
+
+
+def kb_pedir_chave() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔑 Chave Aleatória", callback_data="ck:aleatoria"),
+         InlineKeyboardButton(text="🆔 CPF",           callback_data="ck:cpf")],
+        [InlineKeyboardButton(text="📧 E-mail",          callback_data="ck:email"),
+         InlineKeyboardButton(text="📱 Telefone",        callback_data="ck:telefone")],
+        [InlineKeyboardButton(text="⬅️ Voltar",          callback_data="saq_voltar")],
+    ])
+
+
+def kb_confirma_chave() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="✅ Confirmar Chave PIX", callback_data="ck_conf")],
+        [InlineKeyboardButton(text="✏️ Editar Chave PIX",    callback_data="ck_edit")],
+        [InlineKeyboardButton(text="❌ Voltar",              callback_data="saq_voltar")],
+    ])
+
+
+def kb_valor_saque() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="R$ 30",  callback_data="sv:30"),
+         InlineKeyboardButton(text="R$ 60",  callback_data="sv:60"),
+         InlineKeyboardButton(text="R$ 80",  callback_data="sv:80"),
+         InlineKeyboardButton(text="R$ 200", callback_data="sv:200")],
+        [InlineKeyboardButton(text="✏️ Digitar valor", callback_data="sv_dig")],
+        [InlineKeyboardButton(text="❌ Cancelar",       callback_data="sv_cancel")],
+    ])
+
+
+def kb_confirmar_saque() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="✅ Confirmar Saque", callback_data="sv_conf")],
+        [InlineKeyboardButton(text="❌ Cancelar Saque",  callback_data="sv_cancel")],
+    ])
+
+
+def kb_comprovante(saque_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📄 Receber por PDF", callback_data=f"comp_pdf:{saque_id}")],
+    ])
