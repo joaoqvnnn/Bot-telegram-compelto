@@ -434,3 +434,39 @@ def texto_cadastrar_senha_pedir() -> str:
 
 def texto_cadastrar_senha_ok() -> str:
     return "✅ <b>Senha cadastrada com sucesso!</b>"
+
+
+# ============== MÓDULO 6 ==============
+
+# ---------- 16. Atendimento ----------
+def texto_atendimento_sem_config() -> str:
+    return (
+        "📩 <b>Atendimento</b>\n\n"
+        "⚠️ O canal de atendimento ainda não foi configurado pelo administrador."
+    )
+
+
+# ---------- 17. Pesquisar ----------
+def texto_pesquisar_instrucoes() -> str:
+    return (
+        "🔎 <b>Como procurar um serviço?</b>\n"
+        "Digite: <code>procurar &lt;nome do serviço&gt;</code>"
+    )
+
+
+def texto_pesquisar_forcar_reply() -> str:
+    return "👇 Digite o nome do serviço:"
+
+
+def texto_pesquisar_vazio(termo: str) -> str:
+    return f'❌ Nenhum serviço encontrado com "<b>{termo}</b>".'
+
+
+def texto_pesquisar_resultado(produto: dict) -> str:
+    from config import NOME_LOJA
+    return (
+        f"🎯 <b>{produto['nome']}</b>\n"
+        f"💵 R$ {produto['preco']:.2f}  •  📦 Estoque: <b>{produto['estoque']}</b>\n\n"
+        f"📝 <b>Descrição:</b>\n{produto['descricao']}\n\n"
+        f"Para comprar, clique no botão <b>🛒 Comprar</b> abaixo."
+    )
