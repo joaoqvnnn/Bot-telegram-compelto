@@ -80,7 +80,65 @@ def init_db():
             )
         """)
 
-        # ---- seed ----
+        # ============== MÓDULO 4 ==============
+
+        # ---- gifts (Seção 9) ----
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS gifts (
+                codigo       TEXT PRIMARY KEY,
+                valor        REAL NOT NULL,
+                produto_id   INTEGER,
+                usado        INTEGER DEFAULT 0,
+                usado_por    INTEGER,
+                criado_em    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # ---- recargas (Seção 11) ----
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS recargas (
+                txid         TEXT PRIMARY KEY,
+                user_id      INTEGER NOT NULL,
+                valor        REAL NOT NULL,
+                bonus        REAL DEFAULT 0.0,
+                status       TEXT DEFAULT 'pendente',
+                copia_cola   TEXT,
+                criado_em    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expira_em    TIMESTAMP
+            )
+        """)
+
+        # ---- afiliados (Seção 12) ----
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS afiliados (
+                user_id       INTEGER PRIMARY KEY,
+                ativo         INTEGER DEFAULT 0,
+                comissao      REAL DEFAULT 20.0,
+                indicacoes    INTEGER DEFAULT 0,
+                total_ganho   REAL DEFAULT 0.0,
+                criado_em     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # ---- config admin ----
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS config_admin (
+                chave  TEXT PRIMARY KEY,
+                valor  TEXT
+            )
+        """)
+        defaults = {
+            "recarga_minima":          "4.00",
+            "recarga_bonus_ativo":     "1",
+            "recarga_bonus_pct":       "10",
+            "recarga_bonus_min":       "10.00",
+            "comissao_afiliado_pct":   "20.0",
+            "saque_minimo_afiliado":   "20.00",
+        }
+        for k, v in defaults.items():
+            conn.execute("INSERT OR IGNORE INTO config_admin (chave, valor) VALUES (?, ?)", (k, v))
+
+        # ---- seed produtos ----
         cur = conn.execute("SELECT COUNT(*) FROM produtos")
         if cur.fetchone()[0] == 0:
             conn.executemany(
@@ -91,6 +149,7 @@ def init_db():
                 ],
             )
 
+        # ---- seed credenciais ----
         cur = conn.execute("SELECT COUNT(*) FROM credenciais_estoque")
         if cur.fetchone()[0] == 0:
             conn.executemany(
@@ -113,6 +172,15 @@ def init_db():
                     (2, "vip05@exemplo.com",     "vipEEE555"),
                 ],
             )
+
+        # ---- seed gift exemplo ----
+        cur = conn.execute("SELECT COUNT(*) FROM gifts")
+        if cur.fetchone()[0] == 0:
+            conn.execute(
+                "INSERT INTO gifts (codigo, valor, produto_id) VALUES (?, ?, ?)",
+                ("ABC123XYZ456", 25.00, 1),
+            )
+
         conn.commit()
 
 
@@ -148,6 +216,18 @@ def set_whatsapp(user_id: int, numero: str):
         conn.commit()
 
 
+def creditar_saldo(user_id: int, valor: float):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute("UPDATE users SET saldo = saldo + ? WHERE user_id = ?", (valor, user_id))
+        conn.commit()
+
+
+def debitar_saldo(user_id: int, valor: float):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute("UPDATE users SET saldo = saldo - ? WHERE user_id = ?", (valor, user_id))
+        conn.commit()
+
+
 # ---------------- produtos ----------------
 def listar_produtos():
     with closing(sqlite3.connect(DB_PATH)) as conn:
@@ -164,20 +244,28 @@ def get_produto(pid: int):
         return dict(row) if row else None
 
 
+def decrementar_estoque(produto_id: int, qtd: int):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute(
+            "UPDATE produtos SET estoque = estoque - ?, vendidos = vendidos + ? WHERE id = ?",
+            (qtd, qtd, produto_id),
+        )
+        conn.commit()
+
+
 # ---------------- pagamentos ----------------
 def criar_pagamento(txid: str, user_id: int, produto_id: int, valor: float, copia_cola: str):
     with closing(sqlite3.connect(DB_PATH)) as conn:
         conn.execute("""
             INSERT INTO pagamentos (txid, user_id, produto_id, valor, copia_cola, expira_em)
             VALUES (?, ?, ?, ?, ?, datetime('now', '+30 minutes'))
-        """, (txid, user_id, produto_id, ? valor, copia_cola))
+        """, (txid, user_id, produto_id, valor, copia_cola))
         conn.commit()
 
 
-def",
- get_pagamento(txid: str):
-               with closing(sqlite3.connect(DB_PATH)) ( as conn:
-        conn.row_factory = sqliteuser_id3.Row
+def get_pagamento(txid: str):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
         cur = conn.execute("SELECT * FROM pagamentos WHERE txid = ?", (txid,))
         row = cur.fetchone()
         return dict(row) if row else None
@@ -244,22 +332,95 @@ def listar_compras(user_id: int, apenas_ativas: bool = False):
 def estatisticas_usuario(user_id: int):
     with closing(sqlite3.connect(DB_PATH)) as conn:
         cur = conn.execute(
-            "SELECT COUNT(*), COALESCE(SUM(valor_total),0) FROM compras WHERE user_id =,),
+            "SELECT COUNT(*), COALESCE(SUM(valor_total),0) FROM compras WHERE user_id = ?",
+            (user_id,),
         )
         qtd, gasto = cur.fetchone()
         return {"qtd": qtd, "gasto": gasto or 0.0}
 
 
-def debitar_saldo(user_id: int, valor: float):
+# ============== CONFIG ADMIN ==============
+def get_config(chave: str, default: str = "") -> str:
     with closing(sqlite3.connect(DB_PATH)) as conn:
-        conn.execute("UPDATE users SET saldo = saldo - ? WHERE user_id = ?", (valor, user_id))
+        cur = conn.execute("SELECT valor FROM config_admin WHERE chave = ?", (chave,))
+        row = cur.fetchone()
+        return row[0] if row else default
+
+
+def set_config(chave: str, valor: str):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute(
+            "INSERT INTO config_admin (chave, valor) VALUES (?, ?) "
+            "ON CONFLICT(chave) DO UPDATE SET valor = excluded.valor",
+            (chave, str(valor)),
+        )
         conn.commit()
 
 
-def decrementar_estoque(produto_id: int, qtd: int):
+# ============== GIFTS ==============
+def get_gift(codigo: str):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("SELECT * FROM gifts WHERE codigo = ?", (codigo,))
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+
+def resgatar_gift(codigo: str, user_id: int):
     with closing(sqlite3.connect(DB_PATH)) as conn:
         conn.execute(
-            "UPDATE produtos SET estoque = estoque - ?, vendidos = vendidos + ? WHERE id = ?",
-            (qtd, qtd, produto_id),
+            "UPDATE gifts SET usado = 1, usado_por = ? WHERE codigo = ?",
+            (user_id, codigo),
         )
+        conn.commit()
+
+
+# ============== RECARGAS ==============
+def criar_recarga(txid: str, user_id: int, valor: float, bonus: float, copia_cola: str):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute("""
+            INSERT INTO recargas (txid, user_id, valor, bonus, copia_cola, expira_em)
+            VALUES (?, ?, ?, ?, ?, datetime('now', '+30 minutes'))
+        """, (txid, user_id, valor, bonus, copia_cola))
+        conn.commit()
+
+
+def get_recarga(txid: str):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("SELECT * FROM recargas WHERE txid = ?", (txid,))
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+
+def marcar_recarga_paga(txid: str) -> bool:
+    """Marca paga e credita valor + bônus. Retorna True se foi a 1ª vez."""
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("SELECT * FROM recargas WHERE txid = ?", (txid,))
+        row = cur.fetchone()
+        if not row or row["status"] == "pago":
+            return False
+        conn.execute("UPDATE recargas SET status='pago' WHERE txid = ?", (txid,))
+        total = float(row["valor"]) + float(row["bonus"] or 0)
+        conn.execute("UPDATE users SET saldo = saldo + ? WHERE user_id = ?", (total, row["user_id"]))
+        conn.commit()
+        return True
+
+
+# ============== AFILIADOS ==============
+def get_afiliado(user_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("SELECT * FROM afiliados WHERE user_id = ?", (user_id,))
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+
+def ativar_afiliado(user_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute("""
+            INSERT INTO afiliados (user_id, ativo) VALUES (?, 1)
+            ON CONFLICT(user_id) DO UPDATE SET ativo = 1
+        """, (user_id,))
         conn.commit()
