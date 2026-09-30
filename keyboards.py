@@ -141,3 +141,76 @@ def kb_historico(compras: list, pagina: int, apenas_ativas: bool) -> InlineKeybo
     )])
     rows.append([InlineKeyboardButton(text="⬅️ VOLTAR", callback_data="perfil_voltar")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ============== MÓDULO 4 ==============
+
+# ---------- 9. Gift ----------
+def kb_gift_pedir() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="❌ Cancelar", callback_data="gift_cancel")],
+    ])
+
+
+def kb_gift_ok(produto_id: int | None) -> InlineKeyboardMarkup:
+    rows = []
+    if produto_id:
+        rows.append([InlineKeyboardButton(text="🎁 Usar", callback_data=f"prod:{produto_id}")])
+    rows.append([InlineKeyboardButton(text="⬅️ Voltar ao Perfil", callback_data="gift_voltar")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ---------- 10. Alterar dados ----------
+def kb_alterar_dados() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="❌ Cancelar", callback_data="alt_cancel")],
+    ])
+
+
+# ---------- 11. Recarga ----------
+def kb_recarga_menu() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💠 PIX RÁPIDO", callback_data="rec_pix")],
+        [InlineKeyboardButton(text="⬅️ VOLTAR", callback_data="rec_voltar")],
+    ])
+
+
+def kb_recarga_pedir_valor() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="❌ Cancelar", callback_data="rec_cancel")],
+    ])
+
+
+def kb_recarga_qr(txid: str, copia_cola: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text="📋 Copiar PIX",
+            copy_text=CopyTextButton(text=copia_cola),
+        )],
+        [InlineKeyboardButton(text="⏰ AGUARDANDO PAGAMENTO", callback_data=f"rec_wait:{txid}")],
+        [InlineKeyboardButton(text="❌ Cancelar", callback_data=f"rec_cancel_qr:{txid}")],
+    ])
+
+
+def kb_recarga_ok() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🛍 Comprar", callback_data="menu_catalogo")],
+        [InlineKeyboardButton(text="💠 Ver Recarga", callback_data="menu_recarga")],
+    ])
+
+
+# ---------- 12. Afiliados ----------
+def kb_afiliado_inativo() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="✅ Me Filiar", callback_data="af_ativar")],
+        [InlineKeyboardButton(text="⬅️ Voltar", callback_data="af_voltar")],
+    ])
+
+
+def kb_afiliado_ativo() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📜 Histórico de Saque", callback_data="af_hist")],
+        [InlineKeyboardButton(text="💸 Saques", callback_data="af_saques")],
+        [InlineKeyboardButton(text="🔐 Cadastrar Senha de Saque", callback_data="af_senha")],
+        [InlineKeyboardButton(text="⬅️ Voltar", callback_data="af_voltar")],
+    ])
