@@ -327,3 +327,110 @@ def texto_afiliado_ativo(af: dict, link: str, saque_min: float) -> str:
         "ℹ️ <b>INFO:</b> Seus indicados continuarão gerando comissão para sempre.\n\n"
         f"🔗 <b>Seu link:</b>\n<code>{link}</code>"
     )
+
+
+# ============== MÓDULO 5 ==============
+
+def _saudacao() -> str:
+    from datetime import datetime
+    h = datetime.now().hour
+    if 5 <= h < 12:
+        return "🌅 Bom dia"
+    if 12 <= h < 18:
+        return "🌇 Boa tarde"
+    return "🌙 Boa noite"
+
+
+# ---------- 14.1 ----------
+def texto_sem_senha() -> str:
+    return (
+        "🔐 <b>Você ainda não cadastrou sua senha de saque.</b>\n\n"
+        "Para realizar saques, é necessário cadastrar uma senha de 6 dígitos."
+    )
+
+
+# ---------- 14.2 ----------
+def texto_pedir_chave() -> str:
+    return "💸 Me informe sua chave PIX para qual você deseja receber seu pagamento:"
+
+
+# ---------- 14.3 ----------
+def texto_cadastrar_chave(tipo_label: str) -> str:
+    return f"<b>Cadastre o seu {tipo_label} como chave de saque:</b>"
+
+
+def texto_chave_invalida(tipo_label: str) -> str:
+    return f"❌ <b>{tipo_label} inválido.</b> Envie novamente."
+
+
+# ---------- 14.4 ----------
+def texto_confirma_chave(nome: str, banco: str, tipo_label: str, mascarada: str) -> str:
+    return (
+        "Confirma essa é sua chave?\n"
+        f"👤 Nome: <b>{nome}</b>\n"
+        f"🏦 Banco: <b>{banco}</b>\n"
+        f"🆔 {tipo_label}: <code>{mascarada}</code>"
+    )
+
+
+# ---------- 14.5 ----------
+def texto_tela_saque(nome: str, saldo: float, saque_min: float) -> str:
+    return (
+        f"{_saudacao()}, <b>{nome}</b>!\n\n"
+        f"💸 Quando você deseja sacar hoje?\n"
+        f"💰 Saldo disponível: <b>R$ {saldo:.2f}</b>\n"
+        f"💵 Saque mínimo: <b>R$ {saque_min:.2f}</b>"
+    )
+
+
+# ---------- 14.6 ----------
+def texto_pedir_valor_saque(saldo: float, saque_min: float) -> str:
+    return (
+        "💸 <b>Qual valor você deseja sacar?</b>\n\n"
+        f"💰 Saldo disponível: <b>R$ {saldo:.2f}</b>\n"
+        f"💵 Saque mínimo: <b>R$ {saque_min:.2f}</b>"
+    )
+
+
+# ---------- 14.7 ----------
+def texto_confirmar_saque(nome: str, banco: str, chave_mascarada: str, valor: float) -> str:
+    return (
+        "💰 <b>Confirme os dados do seu saque:</b>\n\n"
+        f"👤 Nome: <b>{nome}</b>\n"
+        f"🏦 Banco: <b>{banco}</b>\n"
+        f"🆔 Chave: <code>{chave_mascarada}</code>\n"
+        f"💵 Valor: <b>R$ {valor:.2f}</b>\n\n"
+        "⚠️ Confira os dados antes de confirmar."
+    )
+
+
+# ---------- 14.8 ----------
+def texto_pedir_senha() -> str:
+    return "🔐 <b>Digite sua senha de 6 dígitos para confirmar o saque:</b>"
+
+
+# ---------- 14.9 ----------
+def texto_senha_errada() -> str:
+    return "❌ <b>Senha incorreta! Tente novamente.</b>"
+
+
+def texto_saque_processando() -> str:
+    return "⏳ <b>Saque em processamento...</b>"
+
+
+def texto_saque_ok() -> str:
+    return "✅ <b>Saque realizado com sucesso!</b>"
+
+
+# ---------- 15. Cadastro de senha (temporário até Mini App) ----------
+def texto_cadastrar_senha_pedir() -> str:
+    return (
+        "🔐 <b>Cadastrar Senha de Saque</b>\n\n"
+        "Envie uma senha de <b>6 dígitos numéricos</b>.\n"
+        "💡 Essa senha será pedida a cada saque.\n\n"
+        "Digite /cancelar para sair."
+    )
+
+
+def texto_cadastrar_senha_ok() -> str:
+    return "✅ <b>Senha cadastrada com sucesso!</b>"
