@@ -7,6 +7,7 @@ from aiogram.types import CallbackQuery, BufferedInputFile
 
 from database import (
     get_saldo, get_produto, listar_produtos, get_pagamento, marcar_pago,
+    registrar_carrinho,
 )
 from keyboards import (
     kb_menu, kb_catalogo, kb_produto, kb_saldo_insuficiente, kb_qr_pix,
@@ -67,6 +68,10 @@ async def abrir_produto(call: CallbackQuery):
 
     saldo = get_saldo(call.from_user.id)
     await _safe_edit(call.message, texto_produto(produto, saldo), kb_produto(pid))
+
+    # 🛒 Registra carrinho abandonado (Parte B)
+    registrar_carrinho(call.from_user.id, pid)
+
     await call.answer()
 
 
@@ -112,13 +117,10 @@ async def comprar(call: CallbackQuery, bot: Bot):
             return
 
         await asyncio.sleep(1)
-        await mostrar_entrega(msg, compra, bot=bot)   # EDITA a msg → call entrega + notifica
-        return.
+        await mostrar_entrega(msg, compra, bot=bot)   # EDITA a msg → entrega + notifica
+        return
 
-    # -------- Casoanswer()
-
-
-# 2: = saldo insuficiente → NOVA MSG --------
+    # -------- Caso 2: saldo insuficiente → NOVA MSG --------
     faltam = produto["preco"] - saldo
     await call.message.answer(
         texto_saldo_insuficiente(saldo, produto["preco"], faltam),
@@ -157,7 +159,10 @@ async def gerar_pix(call: CallbackQuery):
         reply_markup=kb_qr_pix(txid, copia_cola),
         parse_mode="HTML",
     )
-    await===========================================================
+    await call.answer()
+
+
+# ============================================================
 # ⏰ 5.3 AGUARDANDO PAGAMENTO
 # ============================================================
 @router.callback_query(F.data.startswith("pix_wait:"))
