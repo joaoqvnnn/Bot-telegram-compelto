@@ -186,6 +186,66 @@ def init_db():
             )
         """)
 
+        # ============== MÓDULO 8 — CARRINHO / CAMPANHAS / INDICAÇÕES ==============
+
+        # ---- carrinhos abandonados (Parte B) ----
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS carrinhos (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id       INTEGER NOT NULL,
+                produto_id    INTEGER NOT NULL,
+                criado_em     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                notificado    INTEGER DEFAULT 0,
+                finalizado    INTEGER DEFAULT 0
+            )
+        """)
+
+        # ---- campanhas / promoções agendadas (Parte D) ----
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS campanhas (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                tipo            TEXT NOT NULL,      -- promocao|abastecido|afiliado|gift|pix_expirado
+                titulo          TEXT,
+                texto           TEXT NOT NULL,
+                foto_url        TEXT,
+                botoes_json     TEXT NOT NULL,      -- lista [{texto, payload|url}, ...]
+                canal           TEXT,               -- @canal ou ID
+                agendado_para   TIMESTAMP,
+                enviado         INTEGER DEFAULT 0,
+                enviado_em      TIMESTAMP,
+                criado_em       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # ---- conversões de campanha ----
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS campanhas_conversoes (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                campanha_id  INTEGER NOT NULL,
+                user_id      INTEGER NOT NULL,
+                criado_em    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(campanha_id, user_id)
+            )
+        """)
+
+        # ---- indicações (afiliados) ----
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS indicacoes (
+                indicador_id  INTEGER NOT NULL,
+                indicado_id   INTEGER NOT NULL UNIQUE,
+                criado_em     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (indicador_id, indicado_id)
+            )
+        """)
+
+        # ---- defaults config admin: timer carrinho / pix expirado ----
+        for k, v in {
+            "carrinho_minutos":   "20",   # ← Admin muda aqui
+            "carrinho_ativo":     "1",    # liga/desliga
+            "pix_expirado_ativo": "1",
+        }.items():
+            conn.execute("INSERT OR IGNORE INTO config_admin (chave, valor) VALUES (?, ?)", (k, v))
+
         # ---- seed produtos ----
         cur = conn.execute("SELECT COUNT(*) FROM produtos")
         if cur.fetchone()[0] == 0:
@@ -639,3 +699,151 @@ def top_saldo(limite: int = 10):
             LIMIT ?
         """, (limite,))
         return [dict(r) for r in cur.fetchall()]
+
+
+# ============== MÓDULO 8 — CARRINHO / CAMPANHAS / INDICAÇÕES ==============
+
+def registrar_carrinho(user_id: int, produto_id: int):
+    """Chamado quando o usuário abre a tela de um produto."""
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        # Se já existe um carrinho aberto desse produto/user, atualiza timestamp
+        cur = conn.execute("""
+            SELECT id FROM carrinhos
+            WHERE user_id = ? AND produto_id = ? AND finalizado = 0
+            ORDER BY id DESC LIMIT 1
+        """, (user_id, produto_id))
+        row = cur.fetchone()
+        if row:
+            conn.execute(
+                "UPDATE carrinhos SET criado_em = CURRENT_TIMESTAMP, notificado = 0 WHERE id = ?",
+                (row[0],),
+            )
+        else:
+            conn.execute(
+                "INSERT INTO carrinhos (user_id, produto_id) VALUES (?, ?)",
+                (user_id, produto_id),
+            )
+        conn.commit()
+
+
+def finalizar_carrinho(user_id: int, produto_id: int):
+    """Quando o usuário completa a compra, marca o carrinho como finalizado."""
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute("""
+            UPDATE carrinhos SET finalizado = 1
+            WHERE user_id = ? AND produto_id = ? AND finalizado = 0
+        """, (user_id, produto_id))
+        conn.commit()
+
+
+def carrinhos_abandonados(minutos: int):
+    """Retorna carrinhos abertos, não finalizados, não notificados e vencidos."""
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("""
+            SELECT c.*, p.nome AS produto_nome, p.preco AS produto_preco
+            FROM carrinhos c
+            JOIN produtos p ON p.id = c.produto_id
+            WHERE c.finalizado = 0
+              AND c.notificado = 0
+              AND c.criado_em <= datetime('now', ?)
+        """, (f"-{minutos} minutes",))
+        return [dict(r) for r in cur.fetchall()]
+
+
+def marcar_carrinho_notificado(carrinho_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute("UPDATE carrinhos SET notificado = 1 WHERE id = ?", (carrinho_id,))
+        conn.commit()
+
+
+# ---------- Campanhas ----------
+import json as _json
+
+
+def criar_campanha(tipo, texto, botoes: list, titulo="", foto_url="", canal="", agendado_para=None):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        cur = conn.execute("""
+            INSERT INTO campanhas (tipo, titulo, texto, foto_url, botoes_json, canal, agendado_para)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (tipo, titulo, texto, foto_url, _json.dumps(botoes), canal, agendado_para))
+        conn.commit()
+        return cur.lastrowid
+
+
+def get_campanha(campanha_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("SELECT * FROM campanhas WHERE id = ?", (campanha_id,))
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+
+def campanhas_pendentes():
+    """Campanhas não enviadas cujo agendamento já chegou (ou é imediato)."""
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("""
+            SELECT * FROM campanhas
+            WHERE enviado = 0
+              AND (agendado_para IS NULL OR agendado_para <= CURRENT_TIMESTAMP)
+        """)
+        return [dict(r) for r in cur.fetchall()]
+
+
+def marcar_campanha_enviada(campanha_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute(
+            "UPDATE campanhas SET enviado = 1, enviado_em = CURRENT_TIMESTAMP WHERE id = ?",
+            (campanha_id,),
+        )
+        conn.commit()
+
+
+def registrar_conversao_campanha(campanha_id: int, user_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        try:
+            conn.execute(
+                "INSERT INTO campanhas_conversoes (campanha_id, user_id) VALUES (?, ?)",
+                (campanha_id, user_id),
+            )
+            conn.commit()
+        except sqlite3.IntegrityError:
+            pass
+
+
+# ---------- Indicações ----------
+def registrar_indicacao(indicador_id: int, indicado_id: int):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        try:
+            conn.execute(
+                "INSERT INTO indicacoes (indicador_id, indicado_id) VALUES (?, ?)",
+                (indicador_id, indicado_id),
+            )
+            # Atualiza contador do afiliado
+            conn.execute(
+                "UPDATE afiliados SET indicacoes = indicacoes + 1 WHERE user_id = ?",
+                (indicador_id,),
+            )
+            conn.commit()
+        except sqlite3.IntegrityError:
+            pass
+
+
+# ---------- Pagamentos pendentes expirados ----------
+def pagamentos_expirados():
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("""
+            SELECT * FROM pagamentos
+            WHERE status = 'pendente'
+              AND expira_em IS NOT NULL
+              AND expira_em <= CURRENT_TIMESTAMP
+        """)
+        return [dict(r) for r in cur.fetchall()]
+
+
+def marcar_pagamento_expirado(txid: str):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.execute("UPDATE pagamentos SET status='expirado' WHERE txid = ?", (txid,))
+        conn.commit()
