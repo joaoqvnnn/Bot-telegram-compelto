@@ -2,8 +2,9 @@
 from fastapi import APIRouter, Depends
 from auth import get_telegram_user
 from db import (
-    listar_produtos_webapp, listar_categorias, listar_depoimentos,
-    listar_faq, get_config, listar_compras, get_user, buscar_produtos,
+    listar_produtos_webapp, listar_categorias_webapp,
+    listar_depoimentos_webapp, listar_faq_webapp, listar_promos_webapp,
+    config_webapp, historico_webapp, buscar_produtos,
     registrar_carrinho,
 )
 from schemas import CarrinhoAbertoIn
@@ -23,55 +24,32 @@ async def buscar(q: str):
 
 @router.get("/categorias")
 async def categorias():
-    return listar_categorias()
+    return listar_categorias_webapp()
+
+
+@router.get("/promos")
+async def promos():
+    return listar_promos_webapp()
 
 
 @router.get("/depoimentos")
 async def depoimentos():
-    return listar_depoimentos()
+    return listar_depoimentos_webapp()
 
 
 @router.get("/faq")
 async def faq():
-    return listar_faq()
+    return listar_faq_webapp()
 
 
 @router.get("/config")
 async def config_publica():
-    return {
-        "nome_loja":       get_config("nome_loja", "Minha Loja"),
-        "cnpj":            get_config("cnpj", ""),
-        "atendimento":     get_config("atendimento_link", ""),
-        "horario":         get_config("horario", "Seg a Sex, 09h às 18h"),
-        "whatsapp":        get_config("whatsapp", ""),
-        "telegram_suporte": get_config("telegram_suporte", ""),
-        "sobre":           get_config("sobre_bot", ""),
-        "termos":          get_config("termos", ""),
-        "privacidade":     get_config("privacidade", ""),
-        "status_loja":     get_config("status_loja", "active"),  # active | maintenance
-    }
+    return config_webapp()
 
 
 @router.get("/historico")
 async def historico(user: dict = Depends(get_telegram_user)):
-    compras = listar_compras(user["id"])
-    # Formata pro HTML
-    return [
-        {
-            "id": c["id"],
-            "date": c["data_compra"],
-            "validity": c["data_vencimento"],
-            "items": [{
-                "id": c["produto_id"],
-                "name": c["produto_nome"],
-                "price": c["valor_total"] / max(c["quantidade"], 1),
-                "qty": c["quantidade"],
-                "credentials": [{"email": c["email"], "password": c["senha"]}],
-                "activationLink": "",
-            }],
-        }
-        for c in compras
-    ]
+    return historico_webapp(user["id"])
 
 
 @router.post("/carrinho/aberto")
