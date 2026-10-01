@@ -13,6 +13,7 @@ from handlers import setup_routers
 
 logging.basicConfig(level=logging.INFO)
 
+
 async def main():
     init_db()
 
@@ -34,8 +35,13 @@ async def main():
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(
         bot,
-        allowed_updates=["message", "callback_query", "chat_member", "my_chat_member"],
+        allowed_updates=[
+            "message", "callback_query",
+            "chat_member", "my_chat_member",
+            "inline_query",          # ← ADICIONADO
+        ],
     )
+
 
 if __name__ == "__main__":
     asyncio.run(main())
