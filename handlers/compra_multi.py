@@ -130,8 +130,8 @@ async def confirmar_compra(call: CallbackQuery):
         await call.answer("❌ Sem credenciais em estoque.", show_alert=True)
         return
 
-    # EDITA a mensagem do resultado p/ a entrega (Seção 6)
-    await mostrar_entrega(call.message, compra)
+    # EDITA a mensagem do resultado p/ a entrega (Seção 6) + notifica canal
+    await mostrar_entrega(call.message, compra, bot=call.bot)
     await call.answer("✅ Compra confirmada!")
 
 
