@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from auth import get_telegram_user
 from db import (
     get_produto, get_saldo, debitar_saldo, decrementar_estoque,
-    pegar_credencial, criar_compra, get_compra, finalizar_carrinho,
+    pegar_credencial, criar_compra, get_compra, get_user, finalizar_carrinho,
 )
 from bot_notify import notificar_compra_webapp
 from schemas import CompraSaldoIn
@@ -17,7 +17,6 @@ async def comprar_com_saldo(body: CompraSaldoIn, user: dict = Depends(get_telegr
     if not body.itens:
         raise HTTPException(400, "Carrinho vazio")
 
-    # Valida produtos + calcula total
     total = 0.0
     detalhes = []
     for it in body.itens:
@@ -31,9 +30,8 @@ async def comprar_com_saldo(body: CompraSaldoIn, user: dict = Depends(get_telegr
 
     saldo = get_saldo(user["id"])
     if saldo < total:
-        raise HTTPException(400, f"Saldo insuficiente. Faltam R$ {total - saldo:.2f}")
+        return {"ok": False, "erro": f"Saldo insuficiente. Faltam R$ {total - saldo:.2f}"}
 
-    # Debita + cria compras (uma por produto, ou agrega)
     debitar_saldo(user["id"], total)
 
     compras_ids = []
@@ -55,12 +53,16 @@ async def comprar_com_saldo(body: CompraSaldoIn, user: dict = Depends(get_telegr
         )
         compras_ids.append(cid)
 
-        compra = get_compra(cid)
-        await notificar_compra_webapp(user["id"], compra, BOT_USERNAME)
+        # Notifica no chat do bot (opcional)
+        try:
+            compra = get_compra(cid)
+            await notificar_compra_webapp(user["id"], compra, BOT_USERNAME)
+        except Exception:
+            pass
 
-    u = get_user(user["id"])
+    u = get_user(user["id"]) or {}
     return {
         "ok": True,
         "compra_id": compras_ids[0] if compras_ids else None,
-        "novo_saldo": float(u["saldo"]),
+        "novo_saldo": float(u.get("saldo", 0.0)),
     }
