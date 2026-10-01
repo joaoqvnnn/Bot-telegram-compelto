@@ -265,3 +265,23 @@ def kb_comprovante(saque_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📄 Receber por PDF", callback_data=f"comp_pdf:{saque_id}")],
     ])
+
+
+# ============== MÓDULO 6 ==============
+
+def kb_atendimento(url: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📩 Falar com Atendimento", url=url)],
+    ])
+
+
+def kb_pesquisar_resultado(produto_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🛒 Comprar", callback_data=f"prod:{produto_id}")],
+    ])
+
+
+def kb_pesquisar_pedir() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="❌ Cancelar", callback_data="pesq_cancel")],
+    ])
