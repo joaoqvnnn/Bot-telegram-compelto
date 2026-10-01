@@ -112,10 +112,13 @@ async def comprar(call: CallbackQuery, bot: Bot):
             return
 
         await asyncio.sleep(1)
-        await mostrar_entrega(msg, compra)   # EDITA a msg de confirmação → entrega
-        return
+        await mostrar_entrega(msg, compra, bot=bot)   # EDITA a msg → call entrega + notifica
+        return.
 
-    # -------- Caso 2: saldo insuficiente → NOVA MSG --------
+    # -------- Casoanswer()
+
+
+# 2: = saldo insuficiente → NOVA MSG --------
     faltam = produto["preco"] - saldo
     await call.message.answer(
         texto_saldo_insuficiente(saldo, produto["preco"], faltam),
@@ -154,14 +157,11 @@ async def gerar_pix(call: CallbackQuery):
         reply_markup=kb_qr_pix(txid, copia_cola),
         parse_mode="HTML",
     )
-    await call.answer()
-
-
-# ============================================================
+    await===========================================================
 # ⏰ 5.3 AGUARDANDO PAGAMENTO
 # ============================================================
 @router.callback_query(F.data.startswith("pix_wait:"))
-async def pix_wait(call: CallbackQuery):
+async def pix_wait(call: CallbackQuery, bot: Bot):
     txid = call.data.split(":")[1]
     pag = get_pagamento(txid)
     if not pag:
@@ -186,7 +186,7 @@ async def pix_wait(call: CallbackQuery):
         marcar_pago(txid)
         compra = processar_entrega(call.from_user.id, produto, 1)
         if compra:
-            await mostrar_entrega(call.message, compra)
+            await mostrar_entrega(call.message, compra, bot=bot)
             await call.answer()
             return
 
