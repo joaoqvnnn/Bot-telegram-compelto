@@ -1,5 +1,5 @@
 # webapp/routes/__init__.py
-from . import auth_routes, loja, pix, compra, idade, webhook, admin
+from . import auth_routes, loja, pix, compra, idade, webhook, admin, senha
 
 
 def register(app):
@@ -8,5 +8,6 @@ def register(app):
     app.include_router(pix.router)
     app.include_router(compra.router)
     app.include_router(idade.router)
+    app.include_router(senha.router)   # ← ADICIONE
     app.include_router(webhook.router)
     app.include_router(admin.router)
