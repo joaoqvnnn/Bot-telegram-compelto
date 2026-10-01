@@ -20,7 +20,8 @@ class CompraSaldoIn(BaseModel):
 
 
 class CompraPixIn(BaseModel):
-    itens: list[ItemCompra]
+    valor: float | None = None
+    itens: list[ItemCompra] = []
 
 
 class CarrinhoAbertoIn(BaseModel):
