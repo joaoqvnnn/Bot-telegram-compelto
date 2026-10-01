@@ -1895,22 +1895,42 @@
         }
 
         // --- Filtros ---
+        // MAPA de ícones: string (backend) → SVG
+        const categoryIconMap = {
+            fire: icons.fire,
+            film: icons.film,
+            ball: icons.ball,
+            tv: icons.tv,
+            palette: icons.palette,
+            music: icons.music,
+            users: icons.users,
+            package: icons.package,
+        };
+
         function renderFilters() {
             const container = document.getElementById('filtersContainer');
             if (!container) return;
             container.innerHTML = '';
-            const list = categories.length ? categories : defaultCategories;
+            const list = (categories && categories.length) ? categories : defaultCategories;
+
             list.forEach(cat => {
                 const btn = document.createElement('button');
                 const isLocked = cat.locked && !ageVerified;
                 btn.className = `chip ${currentCategory === cat.id ? 'active' : ''} ${isLocked ? 'locked' : ''}`;
-                let iconHtml = cat.icon || '';
-                if (typeof iconHtml !== 'string') iconHtml = '';
+
+                let iconHtml = '';
                 if (cat.id === 'adulto') {
                     iconHtml = ageVerified ? icons.lockOpen : icons.lockClosed;
-                } else if (!iconHtml && defaultCategories.find(c => c.id === cat.id)) {
-                    iconHtml = defaultCategories.find(c => c.id === cat.id).icon || '';
+                } else if (typeof cat.icon === 'string' && categoryIconMap[cat.icon]) {
+                    iconHtml = categoryIconMap[cat.icon];
+                } else if (typeof cat.icon === 'string' && cat.icon.startsWith('<svg')) {
+                    iconHtml = cat.icon; // já é SVG
+                } else {
+                    // fallback p/ categoria padrão
+                    const def = defaultCategories.find(c => c.id === cat.id);
+                    iconHtml = def ? def.icon : icons.package;
                 }
+
                 btn.innerHTML = `${iconHtml} ${cat.name}`;
                 btn.onclick = () => selectCategory(cat.id);
                 container.appendChild(btn);
