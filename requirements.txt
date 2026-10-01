@@ -1,4 +1,14 @@
+# bot
 aiogram>=3.15
 qrcode[pil]
 fpdf2
 Pillow
+
+# webapp
+fastapi
+uvicorn[standard]
+python-multipart
+mercadopago
+python-jose[cryptography]
+httpx
+pydantic
