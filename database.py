@@ -142,6 +142,7 @@ def init_db():
             "saque_minimo_afiliado":   "20.00",
             "atendimento_link":        "",
             "atendimento_mensagem":    "Olá, vim através do bot e gostaria de ajuda.",
+            "canal_notificacoes":      "",
         }
         for k, v in defaults.items():
             conn.execute("INSERT OR IGNORE INTO config_admin (chave, valor) VALUES (?, ?)", (k, v))
@@ -548,4 +549,93 @@ def buscar_produtos(termo: str, limite: int = 20):
             WHERE nome LIKE ? OR descricao LIKE ?
             ORDER BY id LIMIT ?
         """, (like, like, limite))
+        return [dict(r) for r in cur.fetchall()]
+
+
+# ============== MÓDULO 7 — NOTIFICAÇÕES + TOP ==============
+
+def get_canal_notificacoes() -> str:
+    return get_config("canal_notificacoes", "").strip()
+
+
+def set_canal_notificacoes(canal: str):
+    set_config("canal_notificacoes", canal)
+
+
+# ---------- TOP Compradores ----------
+def top_servicos(limite: int = 10):
+    """Mais compras de produtos (soma valor_total)."""
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("""
+            SELECT u.first_name, u.username, u.user_id,
+                   SUM(c.valor_total) AS total, COUNT(*) AS qtd
+            FROM compras c
+            JOIN users u ON u.user_id = c.user_id
+            GROUP BY c.user_id
+            ORDER BY total DESC
+            LIMIT ?
+        """, (limite,))
+        return [dict(r) for r in cur.fetchall()]
+
+
+def top_recargas(limite: int = 10):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("""
+            SELECT u.first_name, u.username, u.user_id,
+                   SUM(r.valor) AS total, COUNT(*) AS qtd
+            FROM recargas r
+            JOIN users u ON u.user_id = r.user_id
+            WHERE r.status = 'pago'
+            GROUP BY r.user_id
+            ORDER BY total DESC
+            LIMIT ?
+        """, (limite,))
+        return [dict(r) for r in cur.fetchall()]
+
+
+def top_compras(limite: int = 10):
+    """Ranking por quantidade de compras."""
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("""
+            SELECT u.first_name, u.username, u.user_id,
+                   COUNT(*) AS qtd, SUM(c.valor_total) AS total
+            FROM compras c
+            JOIN users u ON u.user_id = c.user_id
+            GROUP BY c.user_id
+            ORDER BY qtd DESC
+            LIMIT ?
+        """, (limite,))
+        return [dict(r) for r in cur.fetchall()]
+
+
+def top_giftcards(limite: int = 10):
+    """Ranking por valor de gifts resgatados."""
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("""
+            SELECT u.first_name, u.username, u.user_id,
+                   SUM(g.valor) AS total, COUNT(*) AS qtd
+            FROM gifts g
+            JOIN users u ON u.user_id = g.usado_por
+            WHERE g.usado = 1 AND g.usado_por IS NOT NULL
+            GROUP BY g.usado_por
+            ORDER BY total DESC
+            LIMIT ?
+        """, (limite,))
+        return [dict(r) for r in cur.fetchall()]
+
+
+def top_saldo(limite: int = 10):
+    with closing(sqlite3.connect(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("""
+            SELECT first_name, username, user_id, saldo AS total, 1 AS qtd
+            FROM users
+            WHERE saldo > 0
+            ORDER BY saldo DESC
+            LIMIT ?
+        """, (limite,))
         return [dict(r) for r in cur.fetchall()]
