@@ -1,0 +1,3010 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Joãozinho Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --surface-color: #f8f9fa;
+            --text-primary: #111111;
+            --text-secondary: #666666;
+            --border-color: #e5e7eb;
+            --primary-color: #000000;
+            --primary-contrast: #ffffff;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --star-color: #fbbf24;
+            --toast-bg: #1a1a1a;
+            --toast-text: #ffffff;
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        body.dark-theme {
+            --bg-color: #0a0a0a;
+            --surface-color: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --border-color: #2a2a2a;
+            --primary-color: #ffffff;
+            --primary-contrast: #000000;
+            --toast-bg: #ffffff;
+            --toast-text: #000000;
+            --shadow-sm: 0 2px 8px rgba(255,255,255,0.05);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding-bottom: 80px;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 12px 12px 12px;
+            gap: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .logo {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 1;
+            min-width: 0;
+            max-width: 42%;
+            overflow: hidden;
+            white-space: nowrap;
+            line-height: 1;
+        }
+
+        .logo-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: inline-block;
+            margin-left: 1px;
+            vertical-align: middle;
+            transition: background-color 0.3s;
+        }
+        
+        .logo-dot.status-active { background-color: #10b981; }
+        .logo-dot.status-maintenance { background-color: #ef4444; }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            min-width: 0;
+        }
+
+        .theme-btn, .history-btn {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            min-height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+        .theme-btn:active, .history-btn:active { transform: scale(0.95); }
+
+        .history-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background-color: var(--error-color);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-color);
+            pointer-events: none;
+            z-index: 21;
+            padding: 0 2px;
+            box-sizing: border-box;
+            line-height: 1;
+        }
+
+        .visitor-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background-color: var(--surface-color);
+            height: 36px;
+            min-height: 36px;
+            padding: 0 8px;
+            border-radius: 18px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            max-width: 92px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            flex-shrink: 1;
+            box-sizing: border-box;
+        }
+
+        .visitor-badge span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 60px;
+        }
+
+        .visitor-avatar {
+            width: 18px;
+            height: 18px;
+            background-color: var(--primary-color);
+            color: var(--primary-contrast);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            flex-shrink: 0;
+        }
+
+        main {
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .balance-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--surface-color);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .balance-info { display: flex; flex-direction: column; gap: 4px; }
+        .balance-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+        .balance-amount { font-size: 22px; font-weight: 700; }
+
+        .btn-add-balance {
+            background-color: var(--primary-color);
+            color: var(--primary-contrast);
+            border: none;
+            padding: 10px 16px;
+            border-radius: var(--radius-lg);
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-add-balance:active { transform: scale(0.95); opacity: 0.9; }
+
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            background: linear-gradient(135deg, #0b1b33 0%, #1a2f4c 100%);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .carousel-slide h1 { font-size: 24px; font-weight: 700; line-height: 1.2; margin-bottom: 8px; color: #ffffff; }
+        .carousel-slide p { font-size: 13px; color: rgba(255, 255, 255, 0.8); margin-bottom: 20px; line-height: 1.4; }
+
+        .promo-badge {
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 6px 12px; border-radius: 20px;
+            font-size: 10px; font-weight: 700; letter-spacing: 1px;
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-bottom: 16px; width: fit-content; color: #ffffff;
+        }
+
+        .btn-promo {
+            background-color: white; color: #000; border: none;
+            padding: 12px 20px; border-radius: var(--radius-lg);
+            font-size: 14px; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 8px;
+            cursor: pointer; width: fit-content; transition: all 0.2s;
+        }
+        .btn-promo:active { transform: scale(0.95); }
+
+        .carousel-dots {
+            position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 6px;
+        }
+
+        .dot {
+            width: 6px; height: 6px;
+            background-color: rgba(255,255,255,0.4);
+            border-radius: 50%; transition: all 0.3s;
+        }
+
+        .dot.active { background-color: white; width: 16px; border-radius: 4px; }
+
+        .search-section { display: flex; flex-direction: column; gap: 16px; }
+
+        .search-bar {
+            display: flex; align-items: center;
+            background-color: var(--surface-color);
+            padding: 12px 16px; border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color); gap: 10px;
+        }
+
+        .search-bar svg { color: var(--text-secondary); width: 20px; height: 20px; }
+        .search-bar input { border: none; background: transparent; outline: none; width: 100%; font-size: 14px; color: var(--text-primary); }
+
+        .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+        .filters::-webkit-scrollbar { display: none; }
+
+        .chip {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px; border-radius: 20px;
+            font-size: 13px; font-weight: 600; white-space: nowrap;
+            cursor: pointer; display: flex; align-items: center; gap: 6px;
+            transition: all 0.2s; color: var(--text-primary);
+            position: relative;
+        }
+
+        .chip svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .chip.active { background-color: var(--primary-color); color: var(--primary-contrast); border-color: var(--primary-color); }
+        .chip.locked .lock-icon { opacity: 0.7; }
+
+        .products-section { display: flex; flex-direction: column; gap: 16px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; }
+        .section-header h2 { font-size: 18px; font-weight: 700; }
+        .section-header span { font-size: 13px; color: var(--text-secondary); }
+
+        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+        .product-card {
+            background-color: var(--surface-color);
+            border-radius: var(--radius-md); padding: 12px;
+            display: flex; flex-direction: column; gap: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s; cursor: pointer;
+            position: relative; overflow: hidden;
+        }
+
+        .product-card:active { transform: scale(0.97); }
+
+        .product-promo-tag {
+            position: absolute; top: 8px; left: 8px;
+            background-color: var(--error-color); color: white;
+            font-size: 9px; font-weight: 700; padding: 4px 8px;
+            border-radius: 4px; z-index: 2;
+        }
+
+        .product-img {
+            width: 100%; aspect-ratio: 1;
+            background-color: var(--border-color);
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary);
+        }
+
+        .product-img svg { width: 36px; height: 36px; opacity: 0.7; }
+
+        .product-info h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+        .product-info .price-row { display: flex; align-items: center; gap: 6px; }
+        .product-info .price { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+        .product-info .old-price { font-size: 12px; color: var(--text-secondary); text-decoration: line-through; }
+
+        .testimonials-section { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+        .testimonials-scroll { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; scrollbar-width: none; }
+        .testimonials-scroll::-webkit-scrollbar { display: none; }
+
+        .testimonial-card {
+            min-width: 85%; scroll-snap-align: start;
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: var(--radius-md); padding: 16px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .testimonial-stars { display: flex; gap: 2px; color: var(--star-color); }
+        .testimonial-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; font-style: italic; }
+        .testimonial-author { font-size: 12px; font-weight: 700; margin-top: auto; color: var(--text-primary); }
+
+        .faq-section { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+        .faq-item { border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; background-color: var(--surface-color); }
+
+        .faq-item summary {
+            padding: 16px; font-weight: 600; font-size: 14px;
+            cursor: pointer; list-style: none;
+            display: flex; justify-content: space-between; align-items: center;
+            color: var(--text-primary);
+        }
+
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item summary::after { content: '+'; font-size: 18px; font-weight: 400; color: var(--text-secondary); }
+        .faq-item[open] summary::after { content: '−'; }
+        .faq-content { padding: 0 16px 16px 16px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+        footer {
+            margin-top: 30px; padding: 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center; font-size: 12px;
+            color: var(--text-secondary);
+            display: flex; flex-direction: column; gap: 6px;
+        }
+
+        footer strong { color: var(--text-primary); }
+
+        .footer-support {
+            display: flex; justify-content: center; align-items: center;
+            gap: 12px; margin: 8px 0; font-size: 12px;
+        }
+
+        .footer-support a {
+            color: var(--text-primary); text-decoration: none; font-weight: 600;
+            display: flex; align-items: center; gap: 4px; transition: opacity 0.2s;
+        }
+        .footer-support a:hover { opacity: 0.7; }
+
+        .footer-links { display: flex; justify-content: center; gap: 16px; margin-top: 8px; }
+
+        .footer-link {
+            color: var(--text-secondary) !important; text-decoration: underline;
+            cursor: pointer; font-size: 12px; font-weight: 500;
+            transition: color 0.2s; background: none; border: none; padding: 0;
+        }
+        .footer-link:hover { color: var(--text-primary) !important; }
+
+        .admin-link {
+            color: var(--text-secondary) !important; text-decoration: underline;
+            cursor: pointer; margin-top: 6px; font-size: 11px;
+            background: none; border: none; opacity: 0.8;
+            display: none;
+        }
+        .admin-link:hover { color: var(--text-primary) !important; opacity: 1; }
+
+        .floating-actions {
+            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 440px; padding: 0 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            pointer-events: none; z-index: 10;
+        }
+
+        .cart-btn {
+            background-color: var(--primary-color); color: var(--primary-contrast);
+            border: none; padding: 14px 20px; border-radius: var(--radius-lg);
+            font-size: 14px; font-weight: 700;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: var(--shadow-md); pointer-events: auto; cursor: pointer;
+            position: relative; transition: transform 0.1s; outline: none;
+        }
+        .cart-btn:active { transform: scale(0.95); }
+
+        .cart-badge {
+            position: absolute; top: -8px; right: -8px;
+            background-color: var(--error-color); color: white;
+            font-size: 12px; font-weight: 700;
+            width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid var(--bg-color);
+            pointer-events: none;
+        }
+
+        .chat-btn {
+            width: 56px; height: 56px;
+            background-color: var(--primary-color); color: var(--primary-contrast);
+            border: none; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-md); pointer-events: auto; cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .chat-btn:active { transform: scale(0.95); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex; justify-content: center; align-items: flex-end;
+            z-index: 100; opacity: 0; visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            width: 100%; max-width: 480px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            padding: 24px; transform: translateY(100%);
+            transition: transform 0.3s ease;
+            max-height: 90vh; overflow-y: auto;
+            display: flex; flex-direction: column;
+            color: var(--text-primary);
+        }
+
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h2 { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .close-btn { background: none; border: none; font-size: 24px; color: var(--text-secondary); cursor: pointer; }
+
+        .admin-modal-overlay { align-items: center; padding: 20px; }
+        .admin-modal-overlay .modal-content {
+            border-radius: var(--radius-md); max-width: 380px;
+            transform: scale(0.9); transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0; padding: 32px 24px;
+        }
+        .admin-modal-overlay.active .modal-content { transform: scale(1); opacity: 1; }
+
+        .empty-cart-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px 0; text-align: center; gap: 12px;
+        }
+        .empty-cart-icon {
+            width: 64px; height: 64px; background-color: var(--surface-color);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); margin-bottom: 8px;
+        }
+        .empty-cart-state h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+        .empty-cart-state p { font-size: 13px; color: var(--text-secondary); }
+        .empty-cart-btn {
+            margin-top: 8px; background-color: var(--surface-color); border: 1px solid var(--border-color);
+            padding: 10px 20px; border-radius: 20px; font-weight: 600; font-size: 13px;
+            cursor: pointer; color: var(--text-primary); transition: all 0.2s;
+        }
+        .empty-cart-btn:active { transform: scale(0.95); }
+
+        .product-detail-img {
+            width: 100%; height: 200px; background-color: var(--surface-color);
+            border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;
+            margin-bottom: 16px; border: 1px solid var(--border-color); color: var(--text-secondary);
+        }
+
+        .product-detail-img svg { width: 48px; height: 48px; opacity: 0.6; }
+
+        .product-detail-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); }
+        .product-detail-price { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; }
+        .product-detail-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; }
+
+        .quantity-selector {
+            display: flex; align-items: center; justify-content: space-between;
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: var(--radius-md); padding: 8px; margin-bottom: 24px;
+        }
+
+        .qty-btn {
+            width: 40px; height: 40px; border-radius: 50%; border: none;
+            background-color: var(--bg-color); font-size: 20px; font-weight: 700;
+            color: var(--text-primary); cursor: pointer; box-shadow: var(--shadow-sm);
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .qty-value { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+
+        .related-products { margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 24px; }
+        .related-products h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary); }
+
+        .cart-items { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .cart-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: var(--surface-color); padding: 12px;
+            border-radius: var(--radius-sm); border: 1px solid var(--border-color);
+        }
+        .cart-item-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+        .cart-item-info p { font-size: 13px; color: var(--text-secondary); }
+        .cart-item-actions { display: flex; align-items: center; gap: 12px; }
+        .cart-item-qty { font-weight: 700; font-size: 14px; color: var(--text-primary); }
+        .btn-remove { background: none; border: none; color: var(--error-color); cursor: pointer; font-size: 12px; font-weight: 600; }
+
+        .cart-total {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 18px; font-weight: 700; margin-bottom: 16px;
+            padding-top: 16px; border-top: 1px dashed var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .btn-use-balance {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-use-balance:active { transform: scale(0.98); }
+        .btn-use-balance:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            background-color: var(--text-secondary);
+        }
+
+        .btn-pay-pix {
+            background-color: var(--primary-color);
+            color: var(--primary-contrast);
+            border: none;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-pay-pix:active { transform: scale(0.98); }
+
+        .pix-view { display: none; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+        .pix-view.active { display: flex; }
+
+        .qr-container {
+            position: relative; width: 200px; height: 200px;
+            background-color: var(--surface-color); border: 2px solid var(--border-color);
+            border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;
+            font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;
+            transition: all 0.4s ease; overflow: hidden;
+        }
+
+        .qr-container.paid { border-color: var(--success-color); background-color: #ecfdf5; }
+        .qr-container.expired { border-color: var(--error-color); opacity: 0.55; }
+
+        .qr-checkmark {
+            position: absolute; width: 60px; height: 60px;
+            background-color: var(--success-color); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; opacity: 0; transform: scale(0);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .qr-container.paid .qr-checkmark { opacity: 1; transform: scale(1); }
+
+        .qr-container.paid::after {
+            content: ''; position: absolute; width: 100%; height: 100%;
+            border-radius: var(--radius-md); border: 2px solid var(--success-color);
+            animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; opacity: 0;
+        }
+
+        @keyframes ping {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .pix-value { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+
+        .pix-timer {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-top: -6px;
+        }
+        .pix-timer.warning { color: #f59e0b; }
+        .pix-timer.expired { color: var(--error-color); }
+        
+        .pix-instructions {
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm); padding: 12px; width: 100%;
+            text-align: left; font-size: 12px; color: var(--text-secondary); line-height: 1.5;
+        }
+
+        .pix-instructions strong { color: var(--text-primary); display: block; margin-bottom: 6px; }
+        .pix-instructions ol { padding-left: 16px; margin: 0; }
+        .pix-instructions li { margin-bottom: 4px; }
+
+        .copy-box { display: flex; width: 100%; gap: 8px; }
+        .copy-box input {
+            flex: 1; padding: 12px; border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm); font-size: 12px;
+            color: var(--text-secondary); background-color: var(--surface-color); outline: none;
+        }
+        .copy-box button {
+            background-color: var(--primary-color); color: var(--primary-contrast); border: none;
+            padding: 0 16px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer;
+        }
+
+        .chat-overlay {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+            width: 100%; max-width: 480px; height: 85vh;
+            background-color: var(--bg-color); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+            z-index: 200; transition: transform 0.3s ease;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        .chat-overlay.active { transform: translateX(-50%) translateY(0); }
+
+        .chat-header {
+            padding: 16px 20px; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: var(--surface-color);
+        }
+
+        .chat-header h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+
+        .chat-body {
+            flex: 1; padding: 20px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+
+        .message {
+            max-width: 80%; padding: 12px 16px; border-radius: var(--radius-md);
+            font-size: 14px; line-height: 1.4;
+        }
+
+        .message.bot { background-color: var(--surface-color); color: var(--text-primary); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .message.user { background-color: var(--primary-color); color: var(--primary-contrast); align-self: flex-end; border-bottom-right-radius: 4px; }
+
+        .quick-replies {
+            display: flex; gap: 8px; overflow-x: auto; padding: 0 20px 12px 20px;
+            scrollbar-width: none; background-color: var(--bg-color);
+        }
+        .quick-replies::-webkit-scrollbar { display: none; }
+        
+        .quick-reply-btn {
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            color: var(--text-primary); padding: 8px 16px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; white-space: nowrap;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .quick-reply-btn:hover { background-color: var(--primary-color); color: var(--primary-contrast); }
+
+        .chat-input-area {
+            padding: 16px 20px; border-top: 1px solid var(--border-color);
+            display: flex; gap: 10px; background-color: var(--bg-color);
+        }
+
+        .chat-input-area input {
+            flex: 1; padding: 12px; border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg); outline: none; font-size: 14px;
+            background-color: var(--surface-color); color: var(--text-primary);
+        }
+
+        .chat-input-area button {
+            background-color: var(--primary-color); color: var(--primary-contrast); border: none;
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+
+        .chat-form { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+        .chat-form h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); }
+        .chat-form p { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+        .form-group input {
+            padding: 12px; border: 1px solid var(--border-color);
+            border-radius: var(--radius-md); font-size: 14px; outline: none;
+            transition: border-color 0.2s;
+            background-color: var(--surface-color); color: var(--text-primary);
+        }
+        
+        .form-group input.error { border-color: var(--error-color); background-color: rgba(239, 68, 68, 0.1); }
+        .error-msg { font-size: 11px; color: var(--error-color); font-weight: 600; display: none; }
+        .error-msg.visible { display: block; }
+
+        .amount-btn {
+            padding: 20px; border-radius: var(--radius-md);
+            border: 2px solid var(--border-color); font-size: 18px; font-weight: 700;
+            background: var(--bg-color); color: var(--text-primary);
+            cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .amount-btn:active, .amount-btn.selected {
+            background: var(--primary-color); color: var(--primary-contrast);
+            border-color: var(--primary-color); transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color); color: var(--primary-contrast); border: none;
+            padding: 16px; border-radius: var(--radius-md);
+            font-size: 16px; font-weight: 700; width: 100%; cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .toast-container {
+            position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; flex-direction: column; gap: 10px;
+            pointer-events: none; width: 90%; max-width: 400px;
+        }
+
+        .toast {
+            background-color: var(--toast-bg); color: var(--toast-text);
+            padding: 16px 20px; border-radius: var(--radius-md);
+            font-size: 14px; font-weight: 600;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: translateY(20px) scale(0.95); opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast.show { transform: translateY(0) scale(1); opacity: 1; }
+
+        .toast-icon {
+            width: 24px; height: 24px;
+            background-color: var(--success-color); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-icon.error { background-color: var(--error-color); }
+
+        .delivery-modal-overlay { align-items: center; padding: 20px; }
+        .delivery-modal-overlay .modal-content {
+            border-radius: var(--radius-lg); padding: 32px 24px; text-align: center;
+            transform: scale(0.9); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0;
+        }
+        .delivery-modal-overlay.active .modal-content { transform: scale(1); opacity: 1; }
+
+        .delivery-icon {
+            width: 72px;
+            height: 72px;
+            min-width: 72px;
+            min-height: 72px;
+            background-color: #ecfdf5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            flex-shrink: 0;
+            aspect-ratio: 1 / 1;
+        }
+
+        .delivery-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+        .delivery-subtitle { font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 24px; }
+
+        .delivery-steps {
+            background-color: var(--surface-color); border-radius: var(--radius-md);
+            padding: 16px; text-align: left; margin-bottom: 24px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+
+        .step-item { display: flex; gap: 12px; align-items: flex-start; }
+
+        .step-number {
+            width: 24px; height: 24px; background-color: var(--primary-color);
+            color: var(--primary-contrast); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; flex-shrink: 0;
+        }
+
+        .step-text { font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+
+        .pdf-btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background-color: #ef4444; color: white; border: none; padding: 16px;
+            border-radius: var(--radius-md); font-size: 15px; font-weight: 700;
+            width: 100%; cursor: pointer; margin-bottom: 24px;
+            text-decoration: none; transition: transform 0.1s;
+        }
+        .pdf-btn:active { transform: scale(0.98); }
+
+        .support-note { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px; }
+
+        .pdf-preview-overlay { align-items: center; padding: 20px; z-index: 300 !important; }
+        .pdf-preview-overlay .modal-content {
+            border-radius: var(--radius-lg); padding: 0;
+            max-height: 90vh; overflow-y: auto; position: relative;
+            background-color: var(--bg-color);
+        }
+
+        .pdf-document {
+            background-color: var(--bg-color); padding: 32px 24px; width: 100%;
+            min-height: 400px; display: flex; flex-direction: column; gap: 24px;
+        }
+
+        .pdf-header {
+            text-align: center; border-bottom: 2px dashed var(--border-color); padding-bottom: 20px;
+        }
+
+        .pdf-logo {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;
+        }
+
+        .pdf-subtitle { font-size: 12px; color: var(--text-secondary); }
+
+        .pdf-section-title {
+            font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;
+        }
+
+        .pdf-instructions { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+        .pdf-activation-link {
+            display: inline-block; background-color: var(--surface-color); color: #3b82f6;
+            padding: 10px 16px; border-radius: var(--radius-sm); text-decoration: none;
+            font-weight: 600; font-size: 13px; margin-top: 8px; word-break: break-all;
+            border: 1px solid var(--border-color);
+        }
+
+        .pdf-info-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+            background-color: var(--surface-color); padding: 16px;
+            border-radius: var(--radius-md); border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+        .pdf-info-item { display: flex; flex-direction: column; gap: 4px; }
+        .pdf-info-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; }
+        .pdf-info-value { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+
+        .pdf-item-box {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px; margin-bottom: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        
+        .pdf-item-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color); padding-bottom: 8px;
+        }
+        .pdf-item-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+        .pdf-item-qty { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+
+        .credential-row {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 14px;
+        }
+        .credential-label { color: var(--text-secondary); font-weight: 500; }
+        .credential-value { font-weight: 700; color: var(--text-primary); font-family: monospace; }
+        
+        .reveal-btn {
+            background: none; border: none; color: var(--text-primary);
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            text-decoration: underline; margin-top: 8px; width: 100%; text-align: right;
+        }
+
+        .pdf-security-warning {
+            background-color: #fef3c7; border: 1px solid #f59e0b;
+            border-radius: var(--radius-sm); padding: 12px;
+            display: flex; gap: 10px; align-items: flex-start;
+            font-size: 12px; color: #92400e; line-height: 1.5;
+        }
+        body.dark-theme .pdf-security-warning {
+            background-color: #451a03; border-color: #d97706; color: #fcd34d;
+        }
+        .pdf-security-warning svg { flex-shrink: 0; margin-top: 2px; }
+
+        .pdf-footer {
+            text-align: center; font-size: 11px; color: var(--text-secondary);
+            border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: auto;
+        }
+
+        .pdf-support-row { display: flex; justify-content: center; gap: 12px; margin-top: 12px; }
+
+        .pdf-support-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 14px; border-radius: var(--radius-lg);
+            font-size: 12px; font-weight: 600; text-decoration: none;
+            border: none; cursor: pointer;
+        }
+        .pdf-support-btn.whatsapp { background-color: #25D366; color: white; }
+        .pdf-support-btn.telegram { background-color: #0088cc; color: white; }
+
+        .pdf-close-btn {
+            position: absolute; top: 16px; right: 16px;
+            background-color: var(--surface-color); border: none;
+            width: 32px; height: 32px; border-radius: 50%; font-size: 20px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-secondary); z-index: 10;
+        }
+
+        .history-modal-overlay { z-index: 250 !important; }
+        .history-list { display: flex; flex-direction: column; gap: 12px; }
+        
+        .history-item {
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: var(--radius-md); padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .history-item-header { display: flex; justify-content: space-between; align-items: center; }
+        .history-item-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+        .history-item-date { font-size: 12px; color: var(--text-secondary); }
+        .history-item-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px dashed var(--border-color); padding-top: 12px;
+        }
+        .history-item-price { font-size: 14px; font-weight: 700; color: var(--success-color); }
+        .btn-view-pdf {
+            background-color: var(--primary-color); color: var(--primary-contrast);
+            border: none; padding: 8px 16px; border-radius: var(--radius-lg);
+            font-size: 12px; font-weight: 600; cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
+
+        /* ========== AGE VERIFICATION ========== */
+        .age-modal-overlay { align-items: center; padding: 20px; z-index: 250 !important; }
+        .age-modal-overlay .modal-content {
+            border-radius: var(--radius-lg); max-width: 400px;
+            transform: scale(0.92); opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            max-height: 90vh;
+        }
+        .age-modal-overlay.active .modal-content { transform: scale(1); opacity: 1; }
+
+        .age-step { display: none; }
+        .age-step.active { display: block; }
+
+        .age-icon-big {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: #fef3c7; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px; color: #d97706;
+        }
+        body.dark-theme .age-icon-big { background: #451a03; color: #fbbf24; }
+
+        .age-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+        .age-desc { font-size: 14px; color: var(--text-secondary); text-align: center; line-height: 1.55; margin-bottom: 20px; }
+
+        .age-tips {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .age-tips strong { color: var(--text-primary); display: block; margin-bottom: 6px; }
+        .age-tips ul { padding-left: 18px; margin: 0; }
+        .age-tips li { margin-bottom: 4px; }
+
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 16px; padding: 28px 16px;
+            text-align: center; margin-bottom: 16px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .upload-zone:active { border-color: var(--primary-color); background: var(--surface-color); }
+
+        .photo-status-row {
+            display: flex; gap: 10px; margin-bottom: 16px;
+        }
+        .photo-status-item {
+            flex: 1; background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 12px; text-align: center;
+            font-size: 12px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .photo-status-item.done {
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .preview-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .preview-box {
+            flex: 1;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+            aspect-ratio: 1.25;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            min-height: 130px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .preview-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.48);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 4;
+        }
+        .preview-box.show-delete .preview-overlay {
+            opacity: 1;
+            visibility: visible;
+        }
+        .preview-delete-btn {
+            width: 52px;
+            height: 52px;
+            background: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5);
+            transition: transform 0.15s;
+        }
+        .preview-delete-btn:active {
+            transform: scale(0.9);
+        }
+        .preview-delete-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .verifying-box { text-align: center; padding: 40px 10px; }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result-icon {
+            width: 80px; height: 80px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .result-icon.success { background: #ecfdf5; color: #10b981; }
+        .result-icon.error { background: #fef2f2; color: #ef4444; }
+        body.dark-theme .result-icon.success { background: #064e3b; }
+        body.dark-theme .result-icon.error { background: #7f1d1d; }
+
+        .btn-secondary {
+            background: var(--surface-color); color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 14px; border-radius: var(--radius-md);
+            font-size: 14px; font-weight: 600; width: 100%;
+            margin-top: 10px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span id="storeNameLogo">Joãozinho</span>
+            <span class="logo-dot status-active" id="statusDot"></span>
+        </div>
+        <div class="header-actions">
+            <button class="theme-btn" onclick="toggleTheme()" title="Alternar Tema">
+                <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
+            <button class="history-btn" id="historyBtn" onclick="openHistoryModal()" type="button">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"></path><circle cx="12" cy="12" r="10"></circle></svg>
+                <span class="history-badge" id="historyBadge">0</span>
+            </button>
+            <div class="visitor-badge" id="userBadge">
+                <div class="visitor-avatar" id="userAvatar">V</div>
+                <span id="userName">Visitante</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Balance Card -->
+        <section class="balance-card">
+            <div class="balance-info">
+                <span class="balance-label" id="balanceLabel">Saldo disponível</span>
+                <span class="balance-amount" id="userBalance">R$ 0,00</span>
+            </div>
+            <button class="btn-add-balance" id="btnAddBalance" onclick="openBalanceModal(false)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span id="addBalanceText">Adicionar saldo</span>
+            </button>
+        </section>
+
+        <!-- Carrossel de Promoções -->
+        <section class="carousel-container">
+            <div class="carousel-track" id="carouselTrack"></div>
+            <div class="carousel-dots" id="carouselDots"></div>
+        </section>
+
+        <!-- Search & Filters -->
+        <section class="search-section">
+            <div class="search-bar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="searchInput" placeholder="O que você procura hoje?" oninput="filterBySearch()">
+            </div>
+            <div class="filters" id="filtersContainer"></div>
+        </section>
+
+        <!-- Grid de Produtos -->
+        <section class="products-section">
+            <div class="section-header">
+                <h2 id="sectionTitle">Nossos produtos</h2>
+                <span id="productCount">0 itens</span>
+            </div>
+            <div class="product-grid" id="productGrid"></div>
+        </section>
+
+        <!-- Depoimentos -->
+        <section class="testimonials-section">
+            <div class="section-header">
+                <h2 id="sectionTitleTestimonials">O que dizem nossos clientes</h2>
+            </div>
+            <div class="testimonials-scroll" id="testimonialsScroll"></div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="faq-section" id="faqSection">
+            <div class="section-header">
+                <h2 id="sectionTitleFaq">Perguntas Frequentes</h2>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p><strong id="footerStoreName">Joãozinho Store</strong></p>
+        <p id="footerCnpj">CNPJ: 00.000.000/0000-00</p>
+        <p id="footerHours">Atendimento: Segunda a Sexta, 09h às 18h</p>
+        
+        <div class="footer-support">
+            <a href="#" id="footerWhatsapp" target="_blank">WhatsApp</a>
+            <span style="color: var(--border-color);">|</span>
+            <a href="#" id="footerTelegram" target="_blank">Telegram</a>
+        </div>
+
+        <div class="footer-links">
+            <a href="#" class="footer-link" id="footerTerms" onclick="event.preventDefault(); showTerms()">Termos de Uso</a>
+            <a href="#" class="footer-link" id="footerPrivacy" onclick="event.preventDefault(); showPrivacy()">Privacidade</a>
+        </div>
+        
+        <p id="footerCopyright">&copy; 2026 Todos os direitos reservados.</p>
+        <button class="admin-link" id="adminLinkBtn" onclick="openAdminModal()">Acesso Administrador</button>
+    </footer>
+
+    <!-- Floating Actions -->
+    <div class="floating-actions">
+        <button class="cart-btn" id="cartBtn" onclick="openCart()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <span id="cartButtonText">Ver Carrinho</span>
+            <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+        <button class="chat-btn" onclick="openChat()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </button>
+    </div>
+
+    <!-- Modal de Detalhes do Produto -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detalhes do Produto</h2>
+                <button class="close-btn" onclick="closeProductModal()">&times;</button>
+            </div>
+            <div class="product-detail-img" id="detailImg">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect><line x1="8" y1="2" x2="8" y2="22"></line><line x1="16" y1="2" x2="16" y2="22"></line><line x1="2" y1="8" x2="22" y2="8"></line><line x1="2" y1="16" x2="22" y2="16"></line></svg>
+            </div>
+            <h2 class="product-detail-title" id="detailTitle"></h2>
+            <p class="product-detail-price" id="detailPrice"></p>
+            <p class="product-detail-desc" id="detailDesc"></p>
+            
+            <div class="quantity-selector">
+                <button class="qty-btn" onclick="changeQty(-1)">-</button>
+                <span class="qty-value" id="detailQty">1</span>
+                <button class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+
+            <button class="btn-primary" id="btnAddToCart" onclick="addToCartFromDetail()">Adicionar ao Carrinho</button>
+
+            <div class="related-products">
+                <h3>Mais produtos</h3>
+                <div class="product-grid" id="relatedGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal do Carrinho -->
+    <div class="modal-overlay" id="cartModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Seu Carrinho</h2>
+                <button class="close-btn" onclick="closeCart()">&times;</button>
+            </div>
+            <div class="cart-items" id="cartItems"></div>
+            <div class="cart-total" id="cartTotalContainer">
+                <span>Total:</span>
+                <span id="cartTotal">R$ 0,00</span>
+            </div>
+
+            <div class="payment-options" id="paymentOptions" style="display:none;">
+                <button class="btn-use-balance" id="btnUseBalance" onclick="payWithBalance()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+                    <span id="checkoutText">Usar Saldo da Carteira</span>
+                </button>
+                <button class="btn-pay-pix" onclick="payWithPix()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path></svg>
+                    <span id="pixText">Pagar com PIX</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Adicionar Saldo / PIX -->
+    <div class="modal-overlay" id="balanceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="balanceModalTitle">Adicionar Saldo</h2>
+                <button class="close-btn" onclick="closeBalanceModal()">&times;</button>
+            </div>
+            <div id="selectionView">
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">Selecione um valor para recarregar:</p>
+                
+                <div class="amount-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px;">
+                    <button class="amount-btn" onclick="selectAmount(this, 15)">R$ 15</button>
+                    <button class="amount-btn" onclick="selectAmount(this, 25)">R$ 25</button>
+                    <button class="amount-btn" onclick="selectAmount(this, 50)">R$ 50</button>
+                    <button class="amount-btn" onclick="selectAmount(this, 100)">R$ 100</button>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
+                    <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Ou digite outro valor:</label>
+                    <input type="number" id="customAmountInput" placeholder="R$ 0,00" style="padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 16px; outline: none; background-color: var(--surface-color); color: var(--text-primary);" oninput="clearSelection()">
+                </div>
+                <button class="btn-primary" onclick="generatePix()">Gerar PIX</button>
+            </div>
+
+            <div class="pix-view" id="pixView">
+                <div class="qr-container" id="qrContainer">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                    <div class="qr-checkmark">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                </div>
+                <p class="pix-value" id="pixValueDisplay">R$ 0,00</p>
+                <p class="pix-timer" id="pixTimer">Válido por 05:00</p>
+                
+                <div class="pix-instructions">
+                    <strong>Como pagar no seu banco:</strong>
+                    <ol>
+                        <li>Abra o aplicativo do seu banco.</li>
+                        <li>Escolha a opção <strong>PIX</strong> e depois <strong>Pagar com QR Code</strong> ou <strong>PIX Copia e Cola</strong>.</li>
+                        <li>Copie o código abaixo e cole no campo indicado pelo banco.</li>
+                        <li>Confirme o valor e finalize o pagamento.</li>
+                    </ol>
+                    <p style="margin-top: 8px; font-size: 11px; color: var(--success-color); font-weight: 600;" id="pixCreditNote">O saldo será creditado automaticamente após a confirmação.</p>
+                </div>
+
+                <div class="copy-box">
+                    <input type="text" id="pixCodeInput" value="" readonly>
+                    <button onclick="copyPix()">Copiar</button>
+                </div>
+                <button class="btn-primary" style="margin-top: 10px; display:none;" id="btnNewPix" onclick="generatePix()">Gerar novo PIX</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL VERIFICAÇÃO DE IDADE ========== -->
+    <div class="modal-overlay age-modal-overlay" id="ageModal">
+        <div class="modal-content">
+            <div class="age-step active" id="ageStep1">
+                <div class="age-icon-big">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                </div>
+                <div class="age-title">Conteúdo restrito</div>
+                <div class="age-desc">
+                    Esta categoria contém conteúdo destinado a maiores de 18 anos.<br><br>
+                    Para continuar, confirme sua idade e envie fotos do seu RG (frente e verso) para validação.
+                </div>
+                <button class="btn-primary" onclick="goToAgeStep(2)">Tenho 18 anos ou mais</button>
+                <button class="btn-secondary" onclick="closeAgeModal()">Cancelar</button>
+            </div>
+
+            <div class="age-step" id="ageStep2">
+                <div class="age-title" style="text-align:left;font-size:18px;">Envie seu documento</div>
+                
+                <div class="age-tips">
+                    <strong>Instruções importantes</strong>
+                    <ul>
+                        <li>Foto nítida e bem iluminada</li>
+                        <li>Documento inteiro no quadro (sem cortar bordas)</li>
+                        <li>Evite flash excessivo ou fundo escuro</li>
+                        <li>Envie uma foto por vez (frente → verso)</li>
+                    </ul>
+                </div>
+
+                <div class="photo-status-row">
+                    <div class="photo-status-item" id="statusFront">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        Frente
+                    </div>
+                    <div class="photo-status-item" id="statusBack">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        Verso
+                    </div>
+                </div>
+
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('rgInput').click()">
+                    <div id="uploadPlaceholder">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:10px;opacity:0.6;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        <div style="font-weight:600;font-size:14px;" id="uploadLabel">Toque para enviar a frente do RG</div>
+                        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">JPG ou PNG</div>
+                    </div>
+                </div>
+                <input type="file" id="rgInput" accept="image/*" style="display:none" onchange="handleRgUpload(event)">
+
+                <div class="preview-row" id="previewRow" style="display:none;">
+                    <div class="preview-box" id="previewFrontBox" onclick="togglePreviewDelete('front')">
+                        <span>Frente</span>
+                    </div>
+                    <div class="preview-box" id="previewBackBox" onclick="togglePreviewDelete('back')">
+                        <span>Verso</span>
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="btnVerifyAge" disabled onclick="startAgeVerification()">Verificar idade</button>
+                <button class="btn-secondary" onclick="closeAgeModal()">Cancelar</button>
+            </div>
+
+            <div class="age-step" id="ageStep3">
+                <div class="verifying-box">
+                    <div class="spinner"></div>
+                    <div class="age-title">Verificando sua idade</div>
+                    <div class="age-desc">Estamos analisando as fotos do documento.<br>Isso costuma levar alguns segundos.</div>
+                </div>
+            </div>
+
+            <div class="age-step" id="ageStep4">
+                <div id="ageResultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Overlay -->
+    <div class="chat-overlay" id="chatOverlay">
+        <div class="chat-header">
+            <h3>Suporte Automático</h3>
+            <button class="close-btn" onclick="closeChat()">&times;</button>
+        </div>
+        
+        <div class="chat-form" id="chatForm">
+            <h3>Olá! Antes de começarmos</h3>
+            <p>Por favor, preencha seus dados para um atendimento personalizado. Eles são obrigatórios e únicos.</p>
+            
+            <div class="form-group">
+                <label>Seu Nome Completo</label>
+                <input type="text" id="chatName" placeholder="Ex: João Silva">
+                <span class="error-msg" id="errorName">Por favor, insira seu nome.</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Seu E-mail</label>
+                <input type="email" id="chatEmail" placeholder="Ex: joao@email.com">
+                <span class="error-msg" id="errorEmail">Por favor, insira um e-mail válido.</span>
+            </div>
+            
+            <button class="btn-primary" onclick="submitChatForm()">Iniciar Atendimento</button>
+        </div>
+
+        <div class="chat-body hidden" id="chatBody"></div>
+        
+        <div class="quick-replies hidden" id="quickReplies">
+            <button class="quick-reply-btn" onclick="sendQuickReply('Como faço o pagamento via PIX?')">Como faço o PIX?</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('Qual o prazo de entrega?')">Prazo de entrega</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('Estou com problemas no acesso')">Problemas de acesso</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('Quero falar com um humano')">Falar com humano</button>
+        </div>
+
+        <div class="chat-input-area hidden" id="chatInputArea">
+            <input type="text" id="chatInput" placeholder="Digite sua mensagem..." onkeypress="handleChatKeyPress(event)">
+            <button onclick="sendChatMessage()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Admin -->
+    <div class="modal-overlay admin-modal-overlay" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header" style="justify-content: center; border-bottom: none; margin-bottom: 8px;">
+                <h2 style="font-size: 22px;">Acesso Restrito</h2>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); text-align: center; margin-bottom: 24px;">Digite a senha de administrador para acessar o painel de controle.</p>
+            <input type="password" id="adminPassword" placeholder="Senha de acesso" style="width: 100%; padding: 16px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: var(--radius-md); text-align: center; font-size: 16px; outline: none; background-color: var(--surface-color); color: var(--text-primary);">
+            <button class="btn-primary" onclick="submitAdminLogin()">Entrar no Painel</button>
+            <button style="margin-top: 16px; background: none; border: none; color: var(--text-secondary); font-size: 13px; cursor: pointer; width: 100%;" onclick="closeAdminModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Entrega -->
+    <div class="modal-overlay delivery-modal-overlay" id="deliveryModal">
+        <div class="modal-content">
+            <div class="delivery-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <h2 class="delivery-title">Obrigado por comprar!</h2>
+            <p class="delivery-subtitle">Seu pagamento foi confirmado e seus produtos já estão disponíveis para ativação.</p>
+            
+            <div class="delivery-steps">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Clique no botão abaixo para abrir o PDF com os dados de acesso.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Salve o PDF e siga as instruções de ativação.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Use as credenciais para acessar seu produto.</div>
+                </div>
+            </div>
+
+            <button class="pdf-btn" onclick="openPdfPreview(currentOrderId)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Ver PDF com os Logins
+            </button>
+
+            <p class="support-note">Se você não conseguir ativar, entre em contato com nosso suporte.</p>
+            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 16px;">
+                <a href="#" id="deliveryWhatsapp" target="_blank" style="margin-bottom: 0; background-color: #25D366; color: white; border: none; padding: 10px 20px; border-radius: var(--radius-lg); font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    WhatsApp
+                </a>
+                <a href="#" id="deliveryTelegram" target="_blank" style="margin-bottom: 0; background-color: #0088cc; color: white; border: none; padding: 10px 20px; border-radius: var(--radius-lg); font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    Telegram
+                </a>
+            </div>
+            
+            <button class="btn-primary" style="background-color: var(--surface-color); color: var(--text-primary); border: 1px solid var(--border-color);" onclick="closeDeliveryModal()">Fechar</button>
+        </div>
+    </div>
+
+    <!-- Modal PDF -->
+    <div class="modal-overlay pdf-preview-overlay" id="pdfPreviewModal">
+        <div class="modal-content">
+            <button class="pdf-close-btn" onclick="closePdfPreview()">&times;</button>
+            <div class="pdf-document">
+                <div class="pdf-header">
+                    <div class="pdf-logo">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        <span id="pdfStoreName">Joãozinho Store</span>
+                    </div>
+                    <div class="pdf-subtitle">Comprovante de Acesso e Ativação</div>
+                </div>
+
+                <div>
+                    <div class="pdf-section-title">Detalhes do Pedido</div>
+                    <div class="pdf-info-grid">
+                        <div class="pdf-info-item">
+                            <span class="pdf-info-label">Data da Compra</span>
+                            <span class="pdf-info-value" id="pdfDate">---</span>
+                        </div>
+                        <div class="pdf-info-item">
+                            <span class="pdf-info-label">Válido até</span>
+                            <span class="pdf-info-value" id="pdfValidity">---</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="pdf-section-title">Instruções de Ativação</div>
+                    <div class="pdf-instructions">
+                        Para ativar seu produto, acesse o link abaixo e insira as credenciais fornecidas.
+                        <br><br>
+                        <a href="#" class="pdf-activation-link" id="pdfActivationLink" onclick="event.preventDefault(); showToast('Link de ativação copiado!');">https://ativar.joaozinho.com/ativar?token=---</a>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="pdf-section-title">Produtos Adquiridos</div>
+                    <div id="pdfItemsContainer"></div>
+                </div>
+
+                <div class="pdf-security-warning">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <div><strong>Atenção:</strong> Não compartilhe seus dados de acesso com ninguém. Cada conta é de uso pessoal e intransferível.</div>
+                </div>
+
+                <div class="pdf-footer">
+                    <div>Precisa de ajuda? Fale com nosso suporte:</div>
+                    <div class="pdf-support-row">
+                        <a href="#" id="pdfWhatsapp" target="_blank" class="pdf-support-btn whatsapp">WhatsApp</a>
+                        <a href="#" id="pdfTelegram" target="_blank" class="pdf-support-btn telegram">Telegram</a>
+                    </div>
+                    <div style="margin-top: 12px;" id="pdfFooterCnpj">&copy; 2026 Joãozinho Store - CNPJ: 00.000.000/0000-00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Histórico -->
+    <div class="modal-overlay history-modal-overlay" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Histórico de Compras</h2>
+                <button class="close-btn" onclick="closeHistoryModal()">&times;</button>
+            </div>
+            <div class="history-list" id="historyList"></div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // --- Ícones SVG reutilizáveis ---
+        const icons = {
+            fire: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
+            film: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>`,
+            ball: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>`,
+            tv: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>`,
+            palette: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>`,
+            music: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+            users: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+            lockClosed: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="lock-icon"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+            lockOpen: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="lock-icon"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`,
+            package: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
+            check: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
+            x: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+            checkSmall: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
+            trashNice: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`
+        };
+
+        // --- Trava de Zoom ---
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) event.preventDefault();
+            lastTouchEnd = now;
+        }, false);
+
+        // --- Tema ---
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            const icon = document.getElementById('themeIcon');
+            if (isDark) {
+                icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+            } else {
+                icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+            }
+        }
+
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+            document.getElementById('themeIcon').innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+        }
+
+        // ========== 3.1 — Usuário Telegram (auth real) ==========
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        let USER = null;
+        let purchaseHistory = [];
+        let currentOrderId = null;
+        let isPurchasePix = false;
+        let pixExpiresAt = null;
+        let pixTimerInterval = null;
+        let pixPollingInterval = null;
+        const PIX_VALIDITY_SECONDS = 300;
+
+        async function initUser() {
+            try {
+                if (!tg || !tg.initData) {
+                    // Fallback local (dev)
+                    USER = { id: 0, first_name: 'Visitante', username: null, saldo: 0, is_admin: false, age_verified: false };
+                    applyUserUI();
+                    return;
+                }
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ initData: tg.initData })
+                });
+                if (!res.ok) {
+                    showToast('Sessão inválida', 'error');
+                    return;
+                }
+                USER = await res.json();
+                applyUserUI();
+            } catch (e) {
+                console.error('initUser', e);
+                showToast('Erro ao autenticar', 'error');
+            }
+        }
+
+        function applyUserUI() {
+            if (!USER) return;
+            document.getElementById('userName').innerText =
+                USER.username ? `@${USER.username}` : (USER.first_name || 'Visitante');
+            document.getElementById('userAvatar').innerText =
+                (USER.first_name || USER.username || 'U')[0].toUpperCase();
+            document.getElementById('userBalance').innerText =
+                `R$ ${(USER.saldo || 0).toFixed(2).replace('.', ',')}`;
+            const adminBtn = document.getElementById('adminLinkBtn');
+            if (adminBtn) adminBtn.style.display = USER.is_admin ? 'block' : 'none';
+            ageVerified = !!(USER.age_verified || localStorage.getItem('ageVerified') === 'true');
+        }
+
+        function authHeaders(json = true) {
+            const h = { 'X-Telegram-Init-Data': tg?.initData || '' };
+            if (json) h['Content-Type'] = 'application/json';
+            return h;
+        }
+
+        // ========== 3.2 — Carregar tudo via API ==========
+        let products = [];
+        let promos = [];
+        let categories = [];
+        let testimonials = [];
+        let faqs = [];
+        let appConfig = {};
+
+        let currentCategory = 'all';
+        let ageVerified = false;
+        let rgFrontData = null;
+        let rgBackData = null;
+        let currentUploadSide = 'front';
+
+        const defaultCategories = [
+            { id: 'all', name: 'Mais vendidos', icon: icons.fire },
+            { id: 'filmes', name: 'Filmes e Séries', icon: icons.film },
+            { id: 'futebol', name: 'Futebol Ao Vivo', icon: icons.ball },
+            { id: 'iptv', name: 'IPTV Completo', icon: icons.tv },
+            { id: 'produtividade', name: 'Produtividade', icon: icons.palette },
+            { id: 'musica', name: 'Música', icon: icons.music },
+            { id: 'kids', name: 'Kids e Família', icon: icons.users },
+            { id: 'adulto', name: 'Adulto +18', locked: true }
+        ];
+
+        async function loadTudo() {
+            try {
+                const [prod, prom, cats, deps, faqList, cfg] = await Promise.all([
+                    fetch('/api/produtos').then(r => r.ok ? r.json() : []).catch(() => []),
+                    fetch('/api/promos').then(r => r.ok ? r.json() : []).catch(() => []),
+                    fetch('/api/categorias').then(r => r.ok ? r.json() : []).catch(() => []),
+                    fetch('/api/depoimentos').then(r => r.ok ? r.json() : []).catch(() => []),
+                    fetch('/api/faq').then(r => r.ok ? r.json() : []).catch(() => []),
+                    fetch('/api/config').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+                ]);
+
+                products = Array.isArray(prod) ? prod : [];
+                promos = Array.isArray(prom) ? prom : [];
+                categories = (Array.isArray(cats) && cats.length) ? cats : defaultCategories;
+                testimonials = Array.isArray(deps) ? deps : [];
+                faqs = Array.isArray(faqList) ? faqList : [];
+                appConfig = cfg || {};
+
+                renderConfig(appConfig);
+                renderFilters();
+                renderProducts();
+                renderPromos();
+                renderTestimonials();
+                renderFaq();
+            } catch (e) {
+                console.error('loadTudo', e);
+                categories = defaultCategories;
+                renderFilters();
+            }
+        }
+
+        function renderConfig(cfg) {
+            if (!cfg) return;
+            if (cfg.storeName || cfg.nome_loja) {
+                const name = cfg.storeName || cfg.nome_loja;
+                const logo = document.getElementById('storeNameLogo');
+                if (logo) logo.textContent = name;
+                const fs = document.getElementById('footerStoreName');
+                if (fs) fs.textContent = name;
+                const pdf = document.getElementById('pdfStoreName');
+                if (pdf) pdf.textContent = name;
+            }
+            if (cfg.cnpj) {
+                const el = document.getElementById('footerCnpj');
+                if (el) el.textContent = 'CNPJ: ' + cfg.cnpj;
+                const p = document.getElementById('pdfFooterCnpj');
+                if (p) p.textContent = `© 2026 ${cfg.storeName || 'Joãozinho Store'} - CNPJ: ${cfg.cnpj}`;
+            }
+            if (cfg.hours || cfg.horario) {
+                const el = document.getElementById('footerHours');
+                if (el) el.textContent = 'Atendimento: ' + (cfg.hours || cfg.horario);
+            }
+            const wa = cfg.whatsapp || '';
+            const tgLink = cfg.telegram || '';
+            ['footerWhatsapp', 'deliveryWhatsapp', 'pdfWhatsapp'].forEach(id => {
+                const a = document.getElementById(id);
+                if (a && wa) a.href = wa;
+            });
+            ['footerTelegram', 'deliveryTelegram', 'pdfTelegram'].forEach(id => {
+                const a = document.getElementById(id);
+                if (a && tgLink) a.href = tgLink;
+            });
+            if (cfg.balanceLabel) {
+                const el = document.getElementById('balanceLabel');
+                if (el) el.textContent = cfg.balanceLabel;
+            }
+            if (cfg.addBalanceText) {
+                const el = document.getElementById('addBalanceText');
+                if (el) el.textContent = cfg.addBalanceText;
+            }
+            if (cfg.searchPlaceholder) {
+                const el = document.getElementById('searchInput');
+                if (el) el.placeholder = cfg.searchPlaceholder;
+            }
+            if (cfg.sectionTitleProducts) {
+                const el = document.getElementById('sectionTitle');
+                if (el) el.textContent = cfg.sectionTitleProducts;
+            }
+            if (cfg.sectionTitleTestimonials) {
+                const el = document.getElementById('sectionTitleTestimonials');
+                if (el) el.textContent = cfg.sectionTitleTestimonials;
+            }
+            if (cfg.sectionTitleFaq) {
+                const el = document.getElementById('sectionTitleFaq');
+                if (el) el.textContent = cfg.sectionTitleFaq;
+            }
+            if (cfg.cartButtonText) {
+                const el = document.getElementById('cartButtonText');
+                if (el) el.textContent = cfg.cartButtonText;
+            }
+            if (cfg.addToCartText) {
+                const el = document.getElementById('btnAddToCart');
+                if (el) el.textContent = cfg.addToCartText;
+            }
+            if (cfg.checkoutText) {
+                const el = document.getElementById('checkoutText');
+                if (el) el.textContent = cfg.checkoutText;
+            }
+            if (cfg.pixText) {
+                const el = document.getElementById('pixText');
+                if (el) el.textContent = cfg.pixText;
+            }
+            if (cfg.copyrightText) {
+                const el = document.getElementById('footerCopyright');
+                if (el) el.textContent = cfg.copyrightText;
+            }
+            if (cfg.adminLinkText) {
+                const el = document.getElementById('adminLinkBtn');
+                if (el) el.textContent = cfg.adminLinkText;
+            }
+            const dot = document.getElementById('statusDot');
+            if (dot) {
+                dot.className = 'logo-dot ' + (cfg.status === 'maintenance' ? 'status-maintenance' : 'status-active');
+            }
+            window._termsContent = cfg.termsContent || '';
+            window._privacyContent = cfg.privacyContent || '';
+            window._termsText = cfg.termsText || 'Termos de Uso';
+            window._privacyText = cfg.privacyText || 'Privacidade';
+            const ft = document.getElementById('footerTerms');
+            if (ft && cfg.termsText) ft.textContent = cfg.termsText;
+            const fp = document.getElementById('footerPrivacy');
+            if (fp && cfg.privacyText) fp.textContent = cfg.privacyText;
+        }
+
+        function showTerms() {
+            alert((window._termsText || 'Termos de Uso') + ':\n\n' + (window._termsContent || 'Ao comprar, você concorda com nossos termos.'));
+        }
+        function showPrivacy() {
+            alert((window._privacyText || 'Privacidade') + ':\n\n' + (window._privacyContent || 'Seus dados estão seguros e não compartilhamos com terceiros.'));
+        }
+
+        // --- Toast ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            const iconClass = type === 'error' ? 'toast-icon error' : 'toast-icon';
+            const iconSvg = type === 'error'
+                ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`
+                : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            toast.innerHTML = `<div class="${iconClass}">${iconSvg}</div><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- Filtros ---
+        function renderFilters() {
+            const container = document.getElementById('filtersContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            const list = categories.length ? categories : defaultCategories;
+            list.forEach(cat => {
+                const btn = document.createElement('button');
+                const isLocked = cat.locked && !ageVerified;
+                btn.className = `chip ${currentCategory === cat.id ? 'active' : ''} ${isLocked ? 'locked' : ''}`;
+                let iconHtml = cat.icon || '';
+                if (typeof iconHtml !== 'string') iconHtml = '';
+                if (cat.id === 'adulto') {
+                    iconHtml = ageVerified ? icons.lockOpen : icons.lockClosed;
+                } else if (!iconHtml && defaultCategories.find(c => c.id === cat.id)) {
+                    iconHtml = defaultCategories.find(c => c.id === cat.id).icon || '';
+                }
+                btn.innerHTML = `${iconHtml} ${cat.name}`;
+                btn.onclick = () => selectCategory(cat.id);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectCategory(catId) {
+            if (catId === 'adulto' && !ageVerified) {
+                openAgeModal();
+                return;
+            }
+            currentCategory = catId;
+            renderFilters();
+            renderProducts();
+            const cat = (categories.length ? categories : defaultCategories).find(c => c.id === catId);
+            document.getElementById('sectionTitle').innerText = cat ? cat.name : (appConfig.sectionTitleProducts || 'Nossos produtos');
+        }
+
+        // --- Promoções ---
+        const track = document.getElementById('carouselTrack');
+        const dotsContainer = document.getElementById('carouselDots');
+        let currentSlide = 0;
+
+        function renderPromos() {
+            if (!track || !dotsContainer) return;
+            track.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            const list = promos.length ? promos : [];
+            if (!list.length) return;
+
+            const badgeText = appConfig.promoBadgeText || 'PROMOÇÃO DO DIA';
+            const btnText = appConfig.promoButtonText || 'Aproveitar agora';
+
+            list.forEach((promo, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'carousel-slide';
+                slide.innerHTML = `
+                    <div class="promo-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        ${badgeText}
+                    </div>
+                    <h1>${promo.title}<br>por apenas R$ ${promo.price}</h1>
+                    <p>${promo.desc || ''}</p>
+                    <button class="btn-promo" onclick="openProductModal(${promo.targetProductId})">
+                        ${btnText}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                `;
+                track.appendChild(slide);
+                const dot = document.createElement('div');
+                dot.className = `dot ${index === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            if (track) track.style.transform = `translateX(-${currentSlide * 100}%)`;
+            updateDots();
+        }
+
+        function updateDots() {
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        setInterval(() => {
+            if (!promos.length) return;
+            currentSlide = (currentSlide + 1) % promos.length;
+            goToSlide(currentSlide);
+        }, 4000);
+
+        // --- Produtos ---
+        const productGrid = document.getElementById('productGrid');
+        const relatedGrid = document.getElementById('relatedGrid');
+
+        function getFilteredProducts() {
+            let list = products.slice();
+            if (currentCategory !== 'all') {
+                list = list.filter(p => p.cat === currentCategory);
+            }
+            if (!ageVerified) {
+                list = list.filter(p => p.cat !== 'adulto');
+            }
+            const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+            if (search) {
+                list = list.filter(p => p.name.toLowerCase().includes(search) || (p.desc && p.desc.toLowerCase().includes(search)));
+            }
+            return list;
+        }
+
+        function renderProducts(grid = productGrid, productList = null) {
+            if (!grid) return;
+            const list = productList || getFilteredProducts();
+            grid.innerHTML = '';
+            list.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.onclick = () => openProductModal(product.id);
+                const priceHtml = product.oldPrice
+                    ? `<div class="price-row"><span class="price">R$ ${Number(product.price).toFixed(2).replace('.', ',')}</span><span class="old-price">R$ ${Number(product.oldPrice).toFixed(2).replace('.', ',')}</span></div>`
+                    : `<p class="price">R$ ${Number(product.price).toFixed(2).replace('.', ',')}</p>`;
+                const promoTag = product.promo ? `<div class="product-promo-tag">PROMOÇÃO</div>` : '';
+                card.innerHTML = `
+                    ${promoTag}
+                    <div class="product-img">${icons.package}</div>
+                    <div class="product-info">
+                        <h3>${product.name}</h3>
+                        ${priceHtml}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            if (grid === productGrid) {
+                document.getElementById('productCount').innerText = `${list.length} itens`;
+            }
+        }
+
+        function filterBySearch() {
+            renderProducts();
+        }
+
+        // --- Depoimentos & FAQ ---
+        function renderTestimonials() {
+            const scroll = document.getElementById('testimonialsScroll');
+            if (!scroll) return;
+            if (!testimonials.length) {
+                scroll.innerHTML = '';
+                return;
+            }
+            const star = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+            scroll.innerHTML = testimonials.map(t => `
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">${star.repeat(t.rating || 5)}</div>
+                    <p class="testimonial-text">"${t.text}"</p>
+                    <p class="testimonial-author">- ${t.author}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderFaq() {
+            const section = document.getElementById('faqSection');
+            if (!section) return;
+            const header = section.querySelector('.section-header');
+            const headerHtml = header ? header.outerHTML : '';
+            if (!faqs.length) {
+                section.innerHTML = headerHtml;
+                return;
+            }
+            section.innerHTML = headerHtml + faqs.map(f => `
+                <details class="faq-item">
+                    <summary>${f.q || f.pergunta || ''}</summary>
+                    <div class="faq-content">${f.a || f.resposta || ''}</div>
+                </details>
+            `).join('');
+        }
+
+        // --- Detalhes + carrinho aberto (3.9) ---
+        let currentProduct = null;
+        let currentQty = 1;
+
+        function openProductModal(productId) {
+            currentProduct = products.find(p => p.id === productId);
+            if (!currentProduct) return;
+
+            if (currentProduct.cat === 'adulto' && !ageVerified) {
+                openAgeModal();
+                return;
+            }
+
+            // 3.9 — Carrinho abandonado
+            if (tg?.initData) {
+                fetch('/api/carrinho/aberto', {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ produto_id: productId })
+                }).catch(() => {});
+            }
+
+            currentQty = 1;
+            document.getElementById('detailQty').innerText = currentQty;
+            document.getElementById('detailTitle').innerText = currentProduct.name;
+            document.getElementById('detailPrice').innerText = `R$ ${Number(currentProduct.price).toFixed(2).replace('.', ',')}`;
+            document.getElementById('detailDesc').innerText = currentProduct.desc || '';
+            document.getElementById('detailImg').innerHTML = icons.package;
+
+            const related = products.filter(p => p.id !== currentProduct.id && p.cat === currentProduct.cat).slice(0, 2);
+            if (related.length === 0) {
+                const relatedFallback = products.filter(p => p.id !== currentProduct.id).slice(0, 2);
+                renderProducts(relatedGrid, relatedFallback);
+            } else {
+                renderProducts(relatedGrid, related);
+            }
+
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.remove('active');
+        }
+
+        function changeQty(amount) {
+            currentQty += amount;
+            if (currentQty < 1) currentQty = 1;
+            document.getElementById('detailQty').innerText = currentQty;
+        }
+
+        // --- Carrinho ---
+        let cart = [];
+
+        function addToCartFromDetail() {
+            const existingItem = cart.find(item => item.id === currentProduct.id);
+            if (existingItem) {
+                existingItem.qty += currentQty;
+            } else {
+                cart.push({
+                    id: currentProduct.id,
+                    name: currentProduct.name,
+                    price: currentProduct.price,
+                    qty: currentQty
+                });
+            }
+            updateCartBadge();
+            closeProductModal();
+            showToast(`${currentQty}x ${currentProduct.name} adicionado ao carrinho!`);
+        }
+
+        function updateCartBadge() {
+            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById('cartBadge').innerText = totalItems;
+        }
+
+        function openCart() {
+            renderCartItems();
+            document.getElementById('cartModal').classList.add('active');
+        }
+
+        function closeCart() {
+            document.getElementById('cartModal').classList.remove('active');
+        }
+
+        function closeAndScroll() {
+            closeCart();
+            closeHistoryModal();
+            closePdfPreview();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function getCurrentBalance() {
+            return USER ? (USER.saldo || 0) : 0;
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cartItems');
+            const totalContainer = document.getElementById('cartTotalContainer');
+            const paymentOptions = document.getElementById('paymentOptions');
+            container.innerHTML = '';
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-cart-state">
+                        <div class="empty-cart-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        </div>
+                        <h3>Seu carrinho está vazio</h3>
+                        <p>Adicione alguns produtos para continuar.</p>
+                        <button class="empty-cart-btn" onclick="closeAndScroll()">Explorar Produtos</button>
+                    </div>
+                `;
+                totalContainer.style.display = 'none';
+                paymentOptions.style.display = 'none';
+                return;
+            }
+
+            totalContainer.style.display = 'flex';
+            paymentOptions.style.display = 'flex';
+
+            let total = 0;
+            cart.forEach(item => {
+                total += item.price * item.qty;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <div class="cart-item-info">
+                        <h4>${item.name}</h4>
+                        <p>R$ ${Number(item.price).toFixed(2).replace('.', ',')} x ${item.qty}</p>
+                    </div>
+                    <div class="cart-item-actions">
+                        <span class="cart-item-qty">R$ ${(item.price * item.qty).toFixed(2).replace('.', ',')}</span>
+                        <button class="btn-remove" onclick="removeFromCart(${item.id})">Remover</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            document.getElementById('cartTotal').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+            const balance = getCurrentBalance();
+            const btnBalance = document.getElementById('btnUseBalance');
+            const checkoutLabel = appConfig.checkoutText || 'Usar Saldo da Carteira';
+            if (balance >= total) {
+                btnBalance.disabled = false;
+                btnBalance.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+                    ${checkoutLabel} (R$ ${balance.toFixed(2).replace('.', ',')})
+                `;
+            } else {
+                btnBalance.disabled = true;
+                btnBalance.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+                    Saldo insuficiente (R$ ${balance.toFixed(2).replace('.', ',')})
+                `;
+            }
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartBadge();
+            renderCartItems();
+        }
+
+        // ========== 3.5 — Pagamento com saldo (API) ==========
+        async function payWithBalance() {
+            if (!cart.length) return;
+            try {
+                const res = await fetch('/api/compra/saldo', {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({
+                        itens: cart.map(i => ({ produto_id: i.id, qtd: i.qty }))
+                    })
+                });
+                const data = await res.json();
+                if (!data.ok) {
+                    showToast(data.erro || 'Erro na compra', 'error');
+                    return;
+                }
+                if (USER) USER.saldo = data.novo_saldo;
+                document.getElementById('userBalance').innerText =
+                    `R$ ${(data.novo_saldo || 0).toFixed(2).replace('.', ',')}`;
+                currentOrderId = data.compra_id;
+                cart = [];
+                updateCartBadge();
+                closeCart();
+                showToast('Compra realizada com sucesso!');
+                setTimeout(() => openDeliveryModal(), 400);
+                loadHistory();
+            } catch (e) {
+                console.error(e);
+                showToast('Erro ao processar compra', 'error');
+            }
+        }
+
+        // --- PIX compra ---
+        function payWithPix() {
+            if (cart.length === 0) return;
+            closeCart();
+            const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            isPurchasePix = true;
+            document.getElementById('customAmountInput').value = total.toFixed(2);
+            openBalanceModal(true);
+            generatePix();
+        }
+
+        // --- PIX modal ---
+        const modal = document.getElementById('balanceModal');
+        const selectionView = document.getElementById('selectionView');
+        const pixView = document.getElementById('pixView');
+        const qrContainer = document.getElementById('qrContainer');
+        const customInput = document.getElementById('customAmountInput');
+        let selectedValue = null;
+
+        function openBalanceModal(isPurchase = false) {
+            isPurchasePix = isPurchase;
+            modal.classList.add('active');
+            if (isPurchase) {
+                document.getElementById('balanceModalTitle').innerText = 'Finalizar Compra';
+                document.getElementById('selectionView').style.display = 'none';
+                document.getElementById('pixView').classList.add('active');
+                document.getElementById('pixCreditNote').textContent = 'O pagamento será confirmado e o produto liberado automaticamente.';
+            } else {
+                document.getElementById('balanceModalTitle').innerText = 'Adicionar Saldo';
+                document.getElementById('pixCreditNote').textContent = 'O saldo será creditado automaticamente após a confirmação.';
+                resetModal();
+            }
+        }
+
+        function closeBalanceModal() {
+            modal.classList.remove('active');
+            isPurchasePix = false;
+            clearPixTimer();
+            clearPixPolling();
+        }
+
+        function resetModal() {
+            selectionView.style.display = 'block';
+            pixView.classList.remove('active');
+            qrContainer.classList.remove('paid', 'expired');
+            qrContainer.innerHTML = `
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                <div class="qr-checkmark">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+            `;
+            customInput.value = '';
+            selectedValue = null;
+            document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('btnNewPix').style.display = 'none';
+            clearPixTimer();
+            clearPixPolling();
+        }
+
+        function selectAmount(btn, value) {
+            document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            customInput.value = value;
+            selectedValue = value;
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
+            selectedValue = null;
+        }
+
+        function clearPixTimer() {
+            if (pixTimerInterval) {
+                clearInterval(pixTimerInterval);
+                pixTimerInterval = null;
+            }
+            pixExpiresAt = null;
+        }
+
+        function clearPixPolling() {
+            if (pixPollingInterval) {
+                clearInterval(pixPollingInterval);
+                pixPollingInterval = null;
+            }
+        }
+
+        function startPixTimer() {
+            clearPixTimer();
+            if (!pixExpiresAt) {
+                pixExpiresAt = Date.now() + (PIX_VALIDITY_SECONDS * 1000);
+            }
+            const timerEl = document.getElementById('pixTimer');
+            const btnNew = document.getElementById('btnNewPix');
+            qrContainer.classList.remove('expired', 'paid');
+            btnNew.style.display = 'none';
+
+            function updateTimer() {
+                const remaining = Math.max(0, Math.floor((pixExpiresAt - Date.now()) / 1000));
+                const min = Math.floor(remaining / 60).toString().padStart(2, '0');
+                const sec = (remaining % 60).toString().padStart(2, '0');
+                if (remaining <= 0) {
+                    timerEl.textContent = 'PIX expirado';
+                    timerEl.className = 'pix-timer expired';
+                    qrContainer.classList.add('expired');
+                    btnNew.style.display = 'block';
+                    clearPixTimer();
+                    clearPixPolling();
+                    showToast('QR Code PIX expirado. Gere um novo.', 'error');
+                    return;
+                }
+                timerEl.textContent = `Válido por ${min}:${sec}`;
+                timerEl.className = remaining <= 60 ? 'pix-timer warning' : 'pix-timer';
+            }
+            updateTimer();
+            pixTimerInterval = setInterval(updateTimer, 1000);
+        }
+
+        // ========== 3.3 — generatePix real ==========
+        async function generatePix() {
+            let finalValue = parseFloat(customInput.value);
+            if (isPurchasePix && cart.length > 0 && (!finalValue || finalValue <= 0)) {
+                finalValue = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            }
+            if (!finalValue || finalValue <= 0) {
+                showToast('Por favor, selecione ou digite um valor válido.', 'error');
+                return;
+            }
+
+            try {
+                const endpoint = isPurchasePix ? '/api/pix/compra' : '/api/pix/recarga';
+                const body = isPurchasePix
+                    ? { valor: finalValue, itens: cart.map(i => ({ produto_id: i.id, qtd: i.qty })) }
+                    : { valor: finalValue };
+
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (!res.ok || data.erro) {
+                    showToast(data.erro || 'Erro ao gerar PIX', 'error');
+                    return;
+                }
+
+                const formattedValue = finalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById('pixValueDisplay').textContent = formattedValue;
+                document.getElementById('pixCodeInput').value = data.copia_cola || '';
+
+                if (data.qr_code_base64) {
+                    qrContainer.innerHTML = `
+                        <img src="data:image/png;base64,${data.qr_code_base64}" style="width:100%;height:100%;object-fit:contain;" alt="QR Code">
+                        <div class="qr-checkmark">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                    `;
+                }
+
+                selectionView.style.display = 'none';
+                pixView.classList.add('active');
+
+                if (data.expires_at) {
+                    pixExpiresAt = new Date(data.expires_at).getTime();
+                } else {
+                    pixExpiresAt = Date.now() + (PIX_VALIDITY_SECONDS * 1000);
+                }
+                startPixTimer();
+                if (data.txid) startPolling(data.txid);
+            } catch (e) {
+                console.error(e);
+                showToast('Erro ao gerar PIX', 'error');
+            }
+        }
+
+        // ========== 3.4 — Polling real ==========
+        function startPolling(txid) {
+            clearPixPolling();
+            pixPollingInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`/api/pix/status/${txid}`, {
+                        headers: { 'X-Telegram-Init-Data': tg?.initData || '' }
+                    });
+                    const data = await res.json();
+                    if (data.status === 'pago') {
+                        clearPixPolling();
+                        clearPixTimer();
+                        qrContainer.classList.add('paid');
+                        document.getElementById('pixTimer').textContent = 'Pagamento confirmado';
+                        document.getElementById('pixTimer').className = 'pix-timer';
+                        setTimeout(() => {
+                            if (isPurchasePix) {
+                                currentOrderId = data.compra_id;
+                                cart = [];
+                                updateCartBadge();
+                                closeBalanceModal();
+                                showToast('Pagamento confirmado! Produto liberado.');
+                                openDeliveryModal();
+                                loadHistory();
+                            } else {
+                                if (USER) USER.saldo = data.novo_saldo;
+                                document.getElementById('userBalance').innerText =
+                                    `R$ ${(data.novo_saldo || 0).toFixed(2).replace('.', ',')}`;
+                                showToast('Saldo adicionado!');
+                                closeBalanceModal();
+                            }
+                        }, 1500);
+                    }
+                } catch (e) {
+                    console.error('polling', e);
+                }
+            }, 3000);
+        }
+
+        function copyPix() {
+            if (pixExpiresAt && Date.now() > pixExpiresAt) {
+                showToast('Este PIX já expirou. Gere um novo.', 'error');
+                return;
+            }
+            const pixInput = document.getElementById('pixCodeInput');
+            pixInput.select();
+            pixInput.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(pixInput.value).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copiado!';
+                btn.style.backgroundColor = 'var(--success-color)';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.backgroundColor = 'var(--primary-color)';
+                }, 2000);
+            });
+        }
+
+        // --- Entrega ---
+        function openDeliveryModal() {
+            document.getElementById('deliveryModal').classList.add('active');
+        }
+        function closeDeliveryModal() {
+            document.getElementById('deliveryModal').classList.remove('active');
+        }
+
+        // --- PDF ---
+        function openPdfPreview(orderId) {
+            const order = purchaseHistory.find(o => o.id === orderId || o.compra_id === orderId);
+            if (!order) {
+                showToast('Nenhuma compra encontrada para gerar o PDF.', 'error');
+                return;
+            }
+            document.getElementById('pdfDate').innerText = order.date || order.data || '---';
+            document.getElementById('pdfValidity').innerText = order.validity || order.validade || '---';
+            const items = order.items || order.itens || [];
+            const firstItem = items[0];
+            if (firstItem) {
+                document.getElementById('pdfActivationLink').innerText = firstItem.activationLink || firstItem.link_ativacao || '---';
+            }
+            const itemsContainer = document.getElementById('pdfItemsContainer');
+            itemsContainer.innerHTML = '';
+            items.forEach((item) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'pdf-item-box';
+                const creds = item.credentials || item.credenciais || [];
+                let itemContent = `
+                    <div class="pdf-item-header">
+                        <span class="pdf-item-name">${item.name || item.nome}</span>
+                        <span class="pdf-item-qty">Qtd: ${item.qty || item.qtd || 1}</span>
+                    </div>
+                `;
+                if (creds.length > 1) {
+                    itemContent += `<div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">Logins Individuais:</div>`;
+                }
+                creds.forEach((cred, i) => {
+                    const loginLabel = creds.length > 1 ? `Login ${i + 1}:` : '';
+                    const email = cred.email || cred.login || '';
+                    const pass = cred.password || cred.senha || '';
+                    const passId = `pdfPass_${item.id || i}_${i}`;
+                    itemContent += `
+                        <div style="margin-bottom: 12px; padding-bottom: 12px; ${i < creds.length - 1 ? 'border-bottom: 1px dashed var(--border-color);' : ''}">
+                            ${loginLabel ? `<div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">${loginLabel}</div>` : ''}
+                            <div class="credential-row">
+                                <span class="credential-label">E-mail:</span>
+                                <span class="credential-value">${email}</span>
+                            </div>
+                            <div class="credential-row">
+                                <span class="credential-label">Senha:</span>
+                                <span class="credential-value" id="${passId}">••••••••</span>
+                            </div>
+                            <button class="reveal-btn" onclick="togglePasswordReveal('${passId}', '${pass.replace(/'/g, "\\'")}', this)">Mostrar</button>
+                        </div>
+                    `;
+                });
+                itemDiv.innerHTML = itemContent;
+                itemsContainer.appendChild(itemDiv);
+            });
+            document.getElementById('pdfPreviewModal').classList.add('active');
+        }
+
+        function closePdfPreview() {
+            document.getElementById('pdfPreviewModal').classList.remove('active');
+        }
+
+        function togglePasswordReveal(elementId, password, btn) {
+            const passEl = document.getElementById(elementId);
+            const isRevealed = btn.getAttribute('data-revealed') === 'true';
+            if (isRevealed) {
+                passEl.innerText = '••••••••';
+                btn.innerText = 'Mostrar';
+                btn.setAttribute('data-revealed', 'false');
+            } else {
+                passEl.innerText = password;
+                btn.innerText = 'Ocultar';
+                btn.setAttribute('data-revealed', 'true');
+            }
+        }
+
+        // ========== 3.6 — Histórico via API ==========
+        async function loadHistory() {
+            try {
+                const res = await fetch('/api/historico', {
+                    headers: { 'X-Telegram-Init-Data': tg?.initData || '' }
+                });
+                if (res.ok) {
+                    purchaseHistory = await res.json();
+                } else {
+                    purchaseHistory = [];
+                }
+            } catch (e) {
+                purchaseHistory = [];
+            }
+            updateHistoryBadge();
+        }
+
+        function updateHistoryBadge() {
+            document.getElementById('historyBadge').innerText = purchaseHistory.length;
+        }
+
+        function openHistoryModal() {
+            loadHistory().then(() => {
+                renderHistoryList();
+                document.getElementById('historyModal').classList.add('active');
+            });
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').classList.remove('active');
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('historyList');
+            container.innerHTML = '';
+            if (!purchaseHistory.length) {
+                container.innerHTML = `
+                    <div class="empty-cart-state">
+                        <div class="empty-cart-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"></path><circle cx="12" cy="12" r="10"></circle></svg>
+                        </div>
+                        <h3>Nenhuma compra realizada</h3>
+                        <p>Suas compras aparecerão aqui.</p>
+                        <button class="empty-cart-btn" onclick="closeAndScroll()">Explorar Produtos</button>
+                    </div>
+                `;
+                return;
+            }
+            purchaseHistory.forEach((order) => {
+                const items = order.items || order.itens || [];
+                const orderTotal = order.total || items.reduce((sum, item) => sum + ((item.price || item.preco || 0) * (item.qty || item.qtd || 1)), 0);
+                const itemsSummary = items.map(i => `${i.qty || i.qtd || 1}x ${i.name || i.nome}`).join(', ');
+                const oid = order.id || order.compra_id;
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <div class="history-item-header">
+                        <span class="history-item-title">Pedido #${String(oid).slice(-6)}</span>
+                        <span class="history-item-date">${order.date || order.data || ''}</span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">${itemsSummary}</div>
+                    <div class="history-item-footer">
+                        <span class="history-item-price">R$ ${Number(orderTotal).toFixed(2).replace('.', ',')}</span>
+                        <button class="btn-view-pdf" onclick="openPdfPreview(${oid})">Ver Dados de Acesso</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // ========== 3.7 — Verificação de idade via backend ==========
+        function dataURLtoBlob(dataURL) {
+            const arr = dataURL.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) u8arr[n] = bstr.charCodeAt(n);
+            return new Blob([u8arr], { type: mime });
+        }
+
+        function openAgeModal() {
+            rgFrontData = null;
+            rgBackData = null;
+            currentUploadSide = 'front';
+            document.getElementById('statusFront').classList.remove('done');
+            document.getElementById('statusBack').classList.remove('done');
+            document.getElementById('statusFront').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Frente`;
+            document.getElementById('statusBack').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Verso`;
+            document.getElementById('uploadLabel').textContent = 'Toque para enviar a frente do RG';
+            document.getElementById('btnVerifyAge').disabled = true;
+            document.getElementById('previewRow').style.display = 'none';
+            document.getElementById('previewFrontBox').innerHTML = '<span>Frente</span>';
+            document.getElementById('previewFrontBox').classList.remove('show-delete');
+            document.getElementById('previewBackBox').innerHTML = '<span>Verso</span>';
+            document.getElementById('previewBackBox').classList.remove('show-delete');
+            goToAgeStep(1);
+            document.getElementById('ageModal').classList.add('active');
+        }
+
+        function closeAgeModal() {
+            document.getElementById('ageModal').classList.remove('active');
+        }
+
+        function goToAgeStep(n) {
+            document.querySelectorAll('.age-step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`ageStep${n}`).classList.add('active');
+        }
+
+        function togglePreviewDelete(side) {
+            const box = document.getElementById(side === 'front' ? 'previewFrontBox' : 'previewBackBox');
+            if (!box.querySelector('img')) return;
+            const other = document.getElementById(side === 'front' ? 'previewBackBox' : 'previewFrontBox');
+            other.classList.remove('show-delete');
+            box.classList.toggle('show-delete');
+        }
+
+        function handleRgUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                if (currentUploadSide === 'front') {
+                    rgFrontData = ev.target.result;
+                    document.getElementById('statusFront').classList.add('done');
+                    document.getElementById('statusFront').innerHTML = `${icons.checkSmall} Frente`;
+                    document.getElementById('previewFrontBox').innerHTML = `
+                        <img src="${ev.target.result}" alt="Frente">
+                        <div class="preview-overlay">
+                            <button class="preview-delete-btn" onclick="event.stopPropagation(); deletePhoto('front')">${icons.trashNice}</button>
+                        </div>
+                    `;
+                    document.getElementById('previewFrontBox').classList.remove('show-delete');
+                    if (!rgBackData) {
+                        currentUploadSide = 'back';
+                        document.getElementById('uploadLabel').textContent = 'Agora envie o verso do RG';
+                    } else {
+                        document.getElementById('uploadLabel').textContent = 'Fotos prontas. Clique em Verificar idade';
+                    }
+                } else {
+                    rgBackData = ev.target.result;
+                    document.getElementById('statusBack').classList.add('done');
+                    document.getElementById('statusBack').innerHTML = `${icons.checkSmall} Verso`;
+                    document.getElementById('previewBackBox').innerHTML = `
+                        <img src="${ev.target.result}" alt="Verso">
+                        <div class="preview-overlay">
+                            <button class="preview-delete-btn" onclick="event.stopPropagation(); deletePhoto('back')">${icons.trashNice}</button>
+                        </div>
+                    `;
+                    document.getElementById('previewBackBox').classList.remove('show-delete');
+                    document.getElementById('uploadLabel').textContent = 'Fotos prontas. Clique em Verificar idade';
+                }
+                document.getElementById('previewRow').style.display = 'flex';
+                document.getElementById('btnVerifyAge').disabled = !(rgFrontData && rgBackData);
+                setTimeout(() => { document.getElementById('rgInput').value = ''; }, 300);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function deletePhoto(side) {
+            if (side === 'front') {
+                rgFrontData = null;
+                document.getElementById('statusFront').classList.remove('done');
+                document.getElementById('statusFront').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Frente`;
+                document.getElementById('previewFrontBox').innerHTML = '<span>Frente</span>';
+                document.getElementById('previewFrontBox').classList.remove('show-delete');
+                currentUploadSide = 'front';
+                document.getElementById('uploadLabel').textContent = 'Toque para enviar a frente do RG';
+            } else {
+                rgBackData = null;
+                document.getElementById('statusBack').classList.remove('done');
+                document.getElementById('statusBack').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Verso`;
+                document.getElementById('previewBackBox').innerHTML = '<span>Verso</span>';
+                document.getElementById('previewBackBox').classList.remove('show-delete');
+                currentUploadSide = 'back';
+                document.getElementById('uploadLabel').textContent = 'Agora envie o verso do RG';
+            }
+            document.getElementById('btnVerifyAge').disabled = true;
+            if (!rgFrontData && !rgBackData) {
+                document.getElementById('previewRow').style.display = 'none';
+                currentUploadSide = 'front';
+                document.getElementById('uploadLabel').textContent = 'Toque para enviar a frente do RG';
+            }
+            showToast('Foto removida');
+        }
+
+        async function startAgeVerification() {
+            if (!rgFrontData || !rgBackData) {
+                showToast('Envie as duas fotos do RG', 'error');
+                return;
+            }
+            goToAgeStep(3);
+            try {
+                const form = new FormData();
+                form.append('frente', dataURLtoBlob(rgFrontData), 'frente.jpg');
+                form.append('verso', dataURLtoBlob(rgBackData), 'verso.jpg');
+                const res = await fetch('/api/idade/verificar', {
+                    method: 'POST',
+                    headers: { 'X-Telegram-Init-Data': tg?.initData || '' },
+                    body: form
+                });
+                const data = await res.json();
+                const content = document.getElementById('ageResultContent');
+                if (data.aprovado) {
+                    ageVerified = true;
+                    if (USER) USER.age_verified = true;
+                    localStorage.setItem('ageVerified', 'true');
+                    content.innerHTML = `
+                        <div class="result-icon success">${icons.check}</div>
+                        <div class="age-title">Idade confirmada</div>
+                        <div class="age-desc">Seu documento foi validado com sucesso.<br>A categoria Adulto +18 agora está liberada.</div>
+                        <button class="btn-primary" onclick="finishAgeVerification()">Acessar categoria</button>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="result-icon error">${icons.x}</div>
+                        <div class="age-title">Não foi possível validar</div>
+                        <div class="age-desc">${data.motivo || 'As fotos não atenderam aos requisitos. Tente novamente com melhor iluminação.'}</div>
+                        <button class="btn-primary" onclick="goToAgeStep(2)">Tentar novamente</button>
+                        <button class="btn-secondary" onclick="closeAgeModal()">Fechar</button>
+                    `;
+                }
+                goToAgeStep(4);
+            } catch (e) {
+                console.error(e);
+                const content = document.getElementById('ageResultContent');
+                content.innerHTML = `
+                    <div class="result-icon error">${icons.x}</div>
+                    <div class="age-title">Erro na verificação</div>
+                    <div class="age-desc">Não foi possível enviar o documento. Tente novamente.</div>
+                    <button class="btn-primary" onclick="goToAgeStep(2)">Tentar novamente</button>
+                    <button class="btn-secondary" onclick="closeAgeModal()">Fechar</button>
+                `;
+                goToAgeStep(4);
+            }
+        }
+
+        function finishAgeVerification() {
+            closeAgeModal();
+            renderFilters();
+            selectCategory('adulto');
+            showToast('Categoria Adulto +18 liberada');
+        }
+
+        // --- Chat (mantido local) ---
+        const chatOverlay = document.getElementById('chatOverlay');
+        const chatForm = document.getElementById('chatForm');
+        const chatBody = document.getElementById('chatBody');
+        const chatInputArea = document.getElementById('chatInputArea');
+        const chatInput = document.getElementById('chatInput');
+        const quickReplies = document.getElementById('quickReplies');
+
+        function openChat() {
+            chatOverlay.classList.add('active');
+            const savedName = localStorage.getItem('chatName');
+            const savedEmail = localStorage.getItem('chatEmail');
+            if (savedName && savedEmail) {
+                chatForm.classList.add('hidden');
+                chatBody.classList.remove('hidden');
+                chatInputArea.classList.remove('hidden');
+                quickReplies.classList.remove('hidden');
+                if (chatBody.children.length === 0) {
+                    addMessageBot(`Olá, ${savedName}! Como posso ajudar você hoje?`);
+                }
+            } else {
+                chatForm.classList.remove('hidden');
+                chatBody.classList.add('hidden');
+                chatInputArea.classList.add('hidden');
+                quickReplies.classList.add('hidden');
+            }
+        }
+
+        function closeChat() {
+            chatOverlay.classList.remove('active');
+        }
+
+        function submitChatForm() {
+            const nameInput = document.getElementById('chatName');
+            const emailInput = document.getElementById('chatEmail');
+            const errorName = document.getElementById('errorName');
+            const errorEmail = document.getElementById('errorEmail');
+            let isValid = true;
+            if (!nameInput.value.trim()) {
+                nameInput.classList.add('error');
+                errorName.classList.add('visible');
+                isValid = false;
+            } else {
+                nameInput.classList.remove('error');
+                errorName.classList.remove('visible');
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailInput.value.trim() || !emailRegex.test(emailInput.value.trim())) {
+                emailInput.classList.add('error');
+                errorEmail.classList.add('visible');
+                isValid = false;
+            } else {
+                emailInput.classList.remove('error');
+                errorEmail.classList.remove('visible');
+            }
+            if (!isValid) return;
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            localStorage.setItem('chatName', name);
+            localStorage.setItem('chatEmail', email);
+            chatForm.classList.add('hidden');
+            chatBody.classList.remove('hidden');
+            chatInputArea.classList.remove('hidden');
+            quickReplies.classList.remove('hidden');
+            addMessageBot(`Olá, ${name}! Seus dados foram salvos. Como posso ajudar você hoje?`);
+        }
+
+        function addMessageBot(text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message bot';
+            msgDiv.innerText = text;
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function addMessageUser(text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message user';
+            msgDiv.innerText = text;
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function sendQuickReply(text) {
+            addMessageUser(text);
+            quickReplies.classList.add('hidden');
+            addMessageBot('Digitando...');
+            setTimeout(() => {
+                chatBody.removeChild(chatBody.lastChild);
+                let response = 'Desculpe, não entendi. Pode reformular?';
+                const lowerText = text.toLowerCase();
+                if (lowerText.includes('pix') || lowerText.includes('pagamento')) {
+                    response = 'O pagamento via PIX é processado automaticamente. Após pagar, o saldo ou produto é liberado em segundos.';
+                } else if (lowerText.includes('prazo') || lowerText.includes('entrega')) {
+                    response = 'A entrega é 100% automática. Assim que o pagamento for confirmado, você recebe os dados de acesso aqui mesmo no bot.';
+                } else if (lowerText.includes('problema') || lowerText.includes('acesso')) {
+                    response = 'Sinto muito pelo inconveniente. Por favor, me informe o e-mail utilizado na compra para que eu possa verificar.';
+                } else if (lowerText.includes('humano') || lowerText.includes('atendente')) {
+                    response = 'Entendi. Estou transferindo você para um de nossos atendentes humanos. Por favor, aguarde alguns instantes.';
+                }
+                addMessageBot(response);
+                quickReplies.classList.remove('hidden');
+            }, 1500);
+        }
+
+        function sendChatMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            addMessageUser(text);
+            chatInput.value = '';
+            quickReplies.classList.add('hidden');
+            addMessageBot('Digitando...');
+            setTimeout(() => {
+                chatBody.removeChild(chatBody.lastChild);
+                let response = 'Desculpe, não entendi. Pode reformular?';
+                const lowerText = text.toLowerCase();
+                if (lowerText.includes('pix') || lowerText.includes('pagamento')) {
+                    response = 'O pagamento via PIX é processado automaticamente. Após pagar, o saldo ou produto é liberado em segundos.';
+                } else if (lowerText.includes('preço') || lowerText.includes('valor')) {
+                    response = 'Temos produtos a partir de R$ 2,90. Confira nosso catálogo completo na página inicial.';
+                } else if (lowerText.includes('oi') || lowerText.includes('olá') || lowerText.includes('bom dia')) {
+                    response = 'Olá! Em que posso ser útil hoje?';
+                }
+                addMessageBot(response);
+                quickReplies.classList.remove('hidden');
+            }, 1500);
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') sendChatMessage();
+        }
+
+        // ========== 3.8 — Login admin via API ==========
+        function openAdminModal() {
+            document.getElementById('adminModal').classList.add('active');
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.remove('active');
+        }
+
+        async function submitAdminLogin() {
+            const senha = document.getElementById('adminPassword').value;
+            if (!senha) {
+                showToast('Digite a senha', 'error');
+                return;
+            }
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ senha })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.token) sessionStorage.setItem('admin_token', data.token);
+                    showToast('Login realizado com sucesso!');
+                    closeAdminModal();
+                    setTimeout(() => { window.location.href = data.redirect || '/admin'; }, 400);
+                } else {
+                    showToast('Senha incorreta. Tente novamente.', 'error');
+                    document.getElementById('adminPassword').value = '';
+                }
+            } catch (e) {
+                showToast('Erro ao conectar', 'error');
+            }
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('active');
+            }
+        };
+
+        // --- Boot ---
+        (async function boot() {
+            await initUser();
+            await loadTudo();
+            await loadHistory();
+        })();
+    </script>
+</body>
+</html>
