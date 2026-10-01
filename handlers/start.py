@@ -5,11 +5,12 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.exceptions import TelegramBadRequest
 
 from config import CANAL_OBRIGATORIO
-from database import upsert_user, get_saldo
-from keyboards import kb_gate, kb_menu
-from texts import boas_vindas, bloqueio_canal
+from database import upsert_user, get_saldo, get_produto
+from keyboards import kb_gate, kb_menu, kb_produto
+from texts import boas_vindas, bloqueio_canal, texto_produto
 
 router = Router()
+
 
 # ---------- helpers ----------
 async def usuario_no_canal(bot: Bot, user_id: int) -> bool:
@@ -18,6 +19,7 @@ async def usuario_no_canal(bot: Bot, user_id: int) -> bool:
         return membro.status in ("member", "administrator", "creator")
     except TelegramBadRequest:
         return False
+
 
 async def enviar_boas_vindas(msg: Message, bot: Bot, edit: bool = False):
     uid = msg.chat.id
@@ -32,6 +34,7 @@ async def enviar_boas_vindas(msg: Message, bot: Bot, edit: bool = False):
             pass
     await bot.send_message(uid, texto, reply_markup=kb_menu(), parse_mode="HTML")
 
+
 # ---------- /start ----------
 @router.message(CommandStart())
 async def cmd_start(message: Message, bot: Bot):
@@ -41,10 +44,33 @@ async def cmd_start(message: Message, bot: Bot):
         first_name=message.from_user.first_name or "Usuário",
     )
 
-    if await usuario_no_canal(bot, message.from_user.id):
-        await enviar_boas_vindas(message, bot)
-    else:
+    # --- Gate de canal (mantém igual) ---
+    if not await usuario_no_canal(bot, message.from_user.id):
         await message.answer(bloqueio_canal(), reply_markup=kb_gate(), parse_mode="HTML")
+        return
+
+    # --- Deep linking: /start prod_<id> | ref_<id> ---
+    args = (message.text or "").split(maxsplit=1)
+    payload = args[1].strip() if len(args) > 1 else ""
+
+    if payload.startswith("prod_"):
+        try:
+            pid = int(payload[5:])
+        except ValueError:
+            pid = 0
+        produto = get_produto(pid)
+        if produto:
+            saldo = get_saldo(message.from_user.id)
+            await message.answer(
+                texto_produto(produto, saldo),
+                reply_markup=kb_produto(pid),
+                parse_mode="HTML",
+            )
+            return
+
+    # --- Fallback: Boas-vindas ---
+    await enviar_boas_vindas(message, bot)
+
 
 # ---------- botão "Já entrei" ----------
 @router.callback_query(F.data == "check_join")
@@ -54,6 +80,7 @@ async def cb_check_join(call: CallbackQuery, bot: Bot):
         await enviar_boas_vindas(call.message, bot, edit=True)
     else:
         await call.answer("❌ Você ainda não entrou no canal.", show_alert=True)
+
 
 # ---------- Detecção automática de entrada no canal (chat_member) ----------
 @router.chat_member()
@@ -76,6 +103,7 @@ async def on_chat_member(update, bot: Bot):
             )
         except Exception:
             pass  # usuário pode ter bloqueado o bot
+
 
 # ---------- Botões do menu (stub — cada um em seu módulo futuro) ----------
 @router.callback_query(F.data.startswith("menu_"))
