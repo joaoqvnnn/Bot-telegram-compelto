@@ -285,3 +285,26 @@ def kb_pesquisar_pedir() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="❌ Cancelar", callback_data="pesq_cancel")],
     ])
+
+
+# ============== MÓDULO 7 ==============
+
+from texts import FILTROS_TOP  # noqa: E402
+
+
+def kb_top(filtro_ativo: str = "servicos") -> InlineKeyboardMarkup:
+    rows = []
+    linha = []
+    for key, label in FILTROS_TOP:
+        check = "✅" if key == filtro_ativo else "⬜"
+        linha.append(InlineKeyboardButton(
+            text=f"{check} {label.replace('✅ ', '')}",
+            callback_data=f"top:{key}",
+        ))
+        if len(linha) == 2:
+            rows.append(linha)
+            linha = []
+    if linha:
+        rows.append(linha)
+    rows.append([InlineKeyboardButton(text="⬅️ VOLTAR", callback_data="top_voltar")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
