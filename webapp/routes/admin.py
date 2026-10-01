@@ -11,27 +11,16 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 async def login(body: AdminLoginIn):
     if not validar_senha(body.senha):
         raise HTTPException(401, "Senha incorreta")
-    return {"token": gerar_token(0)}
+    return {
+        "token": gerar_token(0),
+        "redirect": "/admin",
+    }
 
 
 @router.get("/config")
 async def ver_config(_admin=Depends(get_admin_user)):
-    return {
-        "nome_loja":       get_config("nome_loja", "Minha Loja"),
-        "cnpj":            get_config("cnpj", ""),
-        "whatsapp":        get_config("whatsapp", ""),
-        "telegram_suporte": get_config("telegram_suporte", ""),
-        "atendimento_link": get_config("atendimento_link", ""),
-        "sobre_bot":       get_config("sobre_bot", ""),
-        "termos":          get_config("termos", ""),
-        "privacidade":     get_config("privacidade", ""),
-        "status_loja":     get_config("status_loja", "active"),
-        "recarga_minima":  get_config("recarga_minima", "4.00"),
-        "recarga_bonus_ativo": get_config("recarga_bonus_ativo", "1"),
-        "recarga_bonus_pct":   get_config("recarga_bonus_pct", "10"),
-        "recarga_bonus_min":   get_config("recarga_bonus_min", "10.00"),
-        "carrinho_minutos":    get_config("carrinho_minutos", "20"),
-    }
+    from db import config_webapp
+    return config_webapp()
 
 
 @router.put("/config")
