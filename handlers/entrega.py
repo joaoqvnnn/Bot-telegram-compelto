@@ -7,12 +7,21 @@ from aiogram.types import CallbackQuery
 
 from database import (
     debitar_saldo, decrementar_estoque, pegar_credencial,
-    criar_compra, get_compra,
+    criar_compra, get_compra, get_user,
 )
 from keyboards import kb_entrega
 from texts import texto_entrega
+from utils.notificacoes import notificar_acesso
 
 router = Router()
+
+
+# ============================================================
+# Helper — nome legível do usuário (para notificação)
+# ============================================================
+def _nome_ou_id(user_id: int) -> str:
+    u = get_user(user_id) or {}
+    return u.get("first_name") or u.get("username") or f"ID {user_id}"
 
 
 # ============================================================
@@ -41,7 +50,7 @@ def processar_entrega(user_id: int, produto: dict, quantidade: int) -> dict | No
     return get_compra(compra_id)
 
 
-async def mostrar_entrega(msg, compra: dict):
+async def mostrar_entrega(msg, compra: dict, bot=None):
     """EDITS a msg informada com o texto de entrega."""
     try:
         await msg.edit_text(
@@ -54,6 +63,16 @@ async def mostrar_entrega(msg, compra: dict):
             texto_entrega(compra),
             reply_markup=kb_entrega(compra["id"]),
             parse_mode="HTML",
+        )
+
+    # 🔔 Notificação no canal
+    if bot is not None:
+        await notificar_acesso(
+            bot=bot,
+            user_id=compra["user_id"],
+            user_nome=_nome_ou_id(compra["user_id"]),
+            produto_nome=compra["produto_nome"],
+            compra_id=compra["id"],
         )
 
 
