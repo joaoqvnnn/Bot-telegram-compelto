@@ -10,6 +10,7 @@ from aiogram.types import BotCommand
 from config import BOT_TOKEN
 from database import init_db
 from handlers import setup_routers
+from utils.rastreador import loop_rastreador   # ← rastreador de carrinho/PIX
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,19 +27,20 @@ async def main():
     await bot.set_my_commands([BotCommand(command="start", description="Iniciar bot")])
 
     dp = Dispatcher()
-    # Registrar updates de membros (para o chat_member handler funcionar)
-    dp.my_chat_member  # garante atributo carregado
     setup_routers(dp)
 
     # Garantir que recebemos chat_member
-    from aiogram.types import Update
     await bot.delete_webhook(drop_pending_updates=True)
+
+    # 🔎 inicia o rastreador em background (carrinho abandonado, PIX expirado, campanhas)
+    asyncio.create_task(loop_rastreador(bot))
+
     await dp.start_polling(
         bot,
         allowed_updates=[
             "message", "callback_query",
             "chat_member", "my_chat_member",
-            "inline_query",          # ← ADICIONADO
+            "inline_query",
         ],
     )
 
