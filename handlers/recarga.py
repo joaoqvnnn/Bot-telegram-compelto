@@ -11,16 +11,18 @@ from aiogram.exceptions import TelegramBadRequest
 
 from database import (
     get_config, get_saldo, criar_recarga, get_recarga,
-    marcar_recarga_paga,
+    marcar_recarga_paga, get_user,
 )
 from keyboards import (
     kb_recarga_menu, kb_recarga_pedir_valor, kb_recarga_qr, kb_recarga_ok,
+    kb_menu,
 )
 from texts import (
     texto_recarga_menu, texto_recarga_pedir_valor,
-    texto_recarga_qr, texto_recarga_ok,
+    texto_recarga_qr, texto_recarga_ok, boas_vindas,
 )
 from utils.pix import gerar_pix_qr
+from utils.notificacoes import notificar_acesso
 
 router = Router()
 
@@ -45,10 +47,6 @@ async def menu_recarga(call: CallbackQuery):
 
 @router.callback_query(F.data == "rec_voltar")
 async def rec_voltar(call: CallbackQuery):
-    from database import get_user
-    from keyboards import kb_menu
-    from texts import boas_vindas
-
     u = get_user(call.from_user.id) or {}
     try:
         await call.message.edit_text(
@@ -90,10 +88,6 @@ async def rec_cancel_cmd(msg: Message, state: FSMContext):
 @router.callback_query(F.data == "rec_cancel")
 async def rec_cancel(call: CallbackQuery, state: FSMContext):
     await state.clear()
-    from database import get_user
-    from keyboards import kb_menu
-    from texts import boas_vindas
-
     u = get_user(call.from_user.id) or {}
     try:
         await call.message.edit_text(
@@ -175,6 +169,16 @@ async def rec_wait(call: CallbackQuery):
         except TelegramBadRequest:
             pass
 
+        # 🔔 Notificação no canal
+        u = get_user(call.from_user.id) or {}
+        await notificar_acesso(
+            bot=call.bot,
+            user_id=call.from_user.id,
+            user_nome=u.get("first_name") or u.get("username") or f"ID {call.from_user.id}",
+            produto_nome=f"Recarga de R$ {rec['valor']:.2f}",
+            compra_id=None,
+        )
+
         await asyncio.sleep(1)
         saldo_novo = get_saldo(call.from_user.id)
         await call.message.answer(
@@ -187,10 +191,6 @@ async def rec_wait(call: CallbackQuery):
 
 @router.callback_query(F.data.startswith("rec_cancel_qr:"))
 async def rec_cancel_qr(call: CallbackQuery):
-    from database import get_user
-    from keyboards import kb_menu
-    from texts import boas_vindas
-
     u = get_user(call.from_user.id) or {}
     try:
         await call.message.edit_caption(caption="❌ Recarga cancelada.")
