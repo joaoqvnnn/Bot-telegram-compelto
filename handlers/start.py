@@ -4,10 +4,12 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.exceptions import TelegramBadRequest
 
-from config import CANAL_OBRIGATORIO
-from database import upsert_user, get_saldo, get_produto
-from keyboards import kb_gate, kb_menu, kb_produto
-from texts import boas_vindas, bloqueio_canal, texto_produto
+from config import CANAL_OBRIGATORIO, is_admin
+from database import (
+    upsert_user, get_saldo, get_produto, get_compra,
+)
+from keyboards import kb_gate, kb_menu, kb_produto, kb_entrega
+from texts import boas_vindas, bloqueio_canal, texto_produto, texto_entrega
 
 router = Router()
 
@@ -49,10 +51,11 @@ async def cmd_start(message: Message, bot: Bot):
         await message.answer(bloqueio_canal(), reply_markup=kb_gate(), parse_mode="HTML")
         return
 
-    # --- Deep linking: /start prod_<id> | ref_<id> ---
+    # --- Deep linking: /start prod_<id> | ref_<id> | ver_<id> ---
     args = (message.text or "").split(maxsplit=1)
     payload = args[1].strip() if len(args) > 1 else ""
 
+    # ---- prod_<id> ----
     if payload.startswith("prod_"):
         try:
             pid = int(payload[5:])
@@ -67,6 +70,26 @@ async def cmd_start(message: Message, bot: Bot):
                 parse_mode="HTML",
             )
             return
+
+    # ---- ver_<compra_id> ----
+    if payload.startswith("ver_"):
+        try:
+            cid = int(payload[4:])
+        except ValueError:
+            cid = 0
+        compra = get_compra(cid)
+        if not compra:
+            await message.answer("❌ Compra não encontrada.")
+            return
+        if compra["user_id"] != message.from_user.id and not is_admin(message.from_user.id):
+            await message.answer("🔒 Você não tem permissão para ver esta compra.")
+            return
+        await message.answer(
+            texto_entrega(compra),
+            reply_markup=kb_entrega(cid),
+            parse_mode="HTML",
+        )
+        return
 
     # --- Fallback: Boas-vindas ---
     await enviar_boas_vindas(message, bot)
